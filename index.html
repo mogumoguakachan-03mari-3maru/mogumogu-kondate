@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>もぐもぐ献立</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff8f1;color:#59483d;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}
+header{background:#ffad85;color:white;text-align:center;padding:28px 12px}
+h1{margin:0;font-size:28px}
+header p{margin:8px 0 0}
+main{max-width:760px;margin:auto;padding:16px}
+section{background:white;border-radius:18px;padding:20px;margin:16px 0;box-shadow:0 3px 12px #e8d8cb70}
+h2{font-size:19px;margin:0 0 14px;color:#dc7958}
+h3{font-size:16px;color:#8c6b54}
+select,button{font:inherit;border-radius:12px;padding:12px}
+select{width:100%;border:1px solid #ddd;background:white}
+button{border:0;background:#f58f6c;color:white;font-weight:bold;cursor:pointer}
+button:active{opacity:.7}
+.primary{display:block;width:100%;font-size:19px;padding:18px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.food{background:#fff7ed;border-radius:9px;padding:10px;display:flex;align-items:center;gap:7px;font-size:14px}
+.food input{width:18px;height:18px;accent-color:#ef8e6c}
+.small{background:#f5e5d6;color:#805e48;font-size:13px;padding:9px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.card{background:#fff8f0;border-left:5px solid #ffae85;padding:15px;border-radius:12px;margin:12px 0}
+.card strong{display:block;font-size:17px;margin-bottom:8px}
+.card p{margin:5px 0;font-size:14px;line-height:1.6}
+.muted{font-size:13px;color:#89796b;line-height:1.7}
+#message{font-weight:bold;color:#c96c52}
+footer{text-align:center;font-size:12px;color:#998b80;padding:20px}
+</style>
+</head>
+<body>
+<header>
+<h1>🥣 もぐもぐ献立</h1>
+<p>赤ちゃんの「今日、何作ろう？」をお手伝い</p>
+</header>
+
+<main>
+<section>
+<h2>👶 赤ちゃんの月齢</h2>
+<select id="age">
+<option value="5">5〜6か月（初期）</option>
+<option value="7">7〜8か月（中期）</option>
+<option value="9">9〜11か月（後期）</option>
+<option value="12">12〜18か月（完了期）</option>
+</select>
+</section>
+
+<section>
+<h2>🥕 食べたことのある食材</h2>
+<p class="muted">安全に食べられたことがある食材だけ選んでください。</p>
+<div class="actions">
+<button class="small" onclick="selectAll(true)">すべて選択</button>
+<button class="small" onclick="selectAll(false)">選択解除</button>
+</div>
+<div id="foods"></div>
+</section>
+
+<section>
+<h2>🍳 調理の手間</h2>
+<select id="effort">
+<option value="easy">簡単・時短</option>
+<option value="normal" selected>ふつう</option>
+<option value="variety">品数を増やしたい</option>
+</select>
+</section>
+
+<section>
+<button class="primary" onclick="generate()">✨ 今日の献立を作る</button>
+<p id="message"></p>
+<div id="result"></div>
+</section>
+
+<section>
+<h2>📖 最近の献立</h2>
+<div id="history" class="muted">まだ履歴がありません。</div>
+<button class="small" onclick="clearHistory()">履歴を削除</button>
+</section>
+</main>
+
+<footer>
+もぐもぐ献立｜離乳食づくりのサポートツール
+</footer>
+
+<script>
+const groups={
+"主食":["米","食パン","うどん","そうめん","オートミール"],
+"野菜":["にんじん","かぼちゃ","じゃがいも","さつまいも","ほうれん草","小松菜","ブロッコリー","大根","キャベツ","白菜","玉ねぎ","トマト"],
+"たんぱく質":["豆腐","しらす","白身魚","鮭","鶏ささみ","鶏ひき肉","卵黄","全卵","納豆","ヨーグルト"],
+"果物":["バナナ","りんご","いちご","みかん","桃"]
+};
+
+const recipes=[
+{name:"にんじんがゆ",items:["米","にんじん"],type:"主食",min:5,steps:"月齢に合わせたおかゆに、やわらかく加熱してつぶしたにんじんを混ぜる。"},
+{name:"かぼちゃがゆ",items:["米","かぼちゃ"],type:"主食",min:5,steps:"かぼちゃをやわらかく煮てつぶし、おかゆに混ぜる。"},
+{name:"ほうれん草がゆ",items:["米","ほうれん草"],type:"主食",min:5,steps:"ほうれん草の葉を十分にゆで、細かくしておかゆに混ぜる。"},
+{name:"さつまいもがゆ",items:["米","さつまいも"],type:"主食",min:5,steps:"さつまいもをやわらかく加熱し、月齢に合わせてつぶしておかゆに混ぜる。"},
+{name:"豆腐がゆ",items:["米","豆腐"],type:"主食",min:5,steps:"豆腐を十分に加熱し、月齢に合わせてつぶしておかゆに混ぜる。"},
+{name:"野菜うどん",items:["うどん","にんじん","玉ねぎ"],type:"主食",min:7,steps:"うどんと野菜を十分に煮て、月齢に合わせた長さ・大きさにする。"},
+{name:"かぼちゃパンがゆ",items:["食パン","かぼちゃ"],type:"主食",min:7,steps:"耳を除いた食パンを水で煮て、やわらかいかぼちゃを混ぜる。"},
+{name:"鮭と野菜のおじや",items:["米","鮭","キャベツ"],type:"主食",min:9,steps:"骨と皮を除いた鮭とキャベツを十分に加熱し、軟飯に混ぜる。"},
+{name:"鶏そぼろごはん",items:["米","鶏ひき肉","にんじん"],type:"主食",min:9,steps:"鶏ひき肉とにんじんを十分に加熱し、月齢に合ったごはんに混ぜる。"},
+{name:"トマトそうめん",items:["そうめん","トマト"],type:"主食",min:9,steps:"そうめんをやわらかくゆでて塩分を洗い流し、加熱したトマトを合わせる。"},
+{name:"にんじんペースト",items:["にんじん"],type:"副菜",min:5,steps:"にんじんをやわらかく煮て、月齢に合わせてなめらかにつぶす。"},
+{name:"かぼちゃペースト",items:["かぼちゃ"],type:"副菜",min:5,steps:"かぼちゃをやわらかく加熱し、湯でのばしてつぶす。"},
+{name:"ブロッコリーのやわらか煮",items:["ブロッコリー"],type:"副菜",min:5,steps:"穂先を十分にやわらかくゆで、月齢に合わせて細かくする。"},
+{name:"大根とにんじんの煮物",items:["大根","にんじん"],type:"副菜",min:7,steps:"野菜をやわらかく煮て、月齢に合った大きさにする。"},
+{name:"さつまいもとりんごの煮物",items:["さつまいも","りんご"],type:"副菜",min:7,steps:"皮や芯を除き、水でやわらかく煮てつぶす。"},
+{name:"トマトと豆腐の煮物",items:["トマト","豆腐"],type:"副菜",min:7,steps:"トマトの皮と種を除き、豆腐と一緒に十分加熱する。"},
+{name:"小松菜とじゃがいもの煮物",items:["小松菜","じゃがいも"],type:"副菜",min:9,steps:"両方をやわらかく煮て、食べやすい大きさにする。"},
+{name:"豆腐のやわらか煮",items:["豆腐"],type:"たんぱく質",min:5,steps:"豆腐を十分に加熱し、月齢に合わせてつぶす。"},
+{name:"白身魚のほぐし煮",items:["白身魚"],type:"たんぱく質",min:5,steps:"骨と皮を完全に取り除き、十分に加熱して細かくほぐし、とろみをつける。"},
+{name:"しらすのやわらか煮",items:["しらす"],type:"たんぱく質",min:5,steps:"しらすをゆでて塩抜きし、月齢に合わせて細かくする。"},
+{name:"鶏ささみのとろとろ煮",items:["鶏ささみ"],type:"たんぱく質",min:7,steps:"筋を除いたささみを十分に加熱し、細かくほぐしてとろみをつける。"},
+{name:"鮭のほぐし煮",items:["鮭"],type:"たんぱく質",min:7,steps:"骨と皮を完全に取り除き、十分に加熱して細かくほぐす。"},
+{name:"納豆のやわらか和え",items:["納豆"],type:"たんぱく質",min:7,steps:"納豆を細かく刻み、必要に応じて湯通しする。"},
+{name:"卵とじ野菜",items:["全卵","キャベツ"],type:"たんぱく質",min:9,steps:"やわらかく煮たキャベツに溶き卵を加え、中心まで完全に火を通す。"},
+{name:"バナナペースト",items:["バナナ"],type:"果物",min:5,steps:"皮を除いて月齢に合わせてつぶす。"},
+{name:"りんごのやわらか煮",items:["りんご"],type:"果物",min:5,steps:"皮と芯を除いてやわらかく煮て、月齢に合わせてつぶす。"},
+{name:"桃のやわらか煮",items:["桃"],type:"果物",min:7,steps:"皮と種を除いて加熱し、食べやすくつぶす。"},
+{name:"いちごのつぶし煮",items:["いちご"],type:"果物",min:7,steps:"ヘタを除いて加熱し、月齢に合わせてつぶす。"}
+];
+
+const foodBox=document.getElementById("foods");
+const savedFoods=JSON.parse(localStorage.getItem("mogumoguFoods")||"[]");
+
+for(const [group,items] of Object.entries(groups)){
+ const title=document.createElement("h3");
+ title.textContent=group;
+ foodBox.appendChild(title);
+ const grid=document.createElement("div");
+ grid.className="grid";
+ items.forEach(item=>{
+  const label=document.createElement("label");
+  label.className="food";
+  const box=document.createElement("input");
+  box.type="checkbox";
+  box.value=item;
+  box.checked=savedFoods.includes(item);
+  box.addEventListener("change",saveFoods);
+  label.append(box,document.createTextNode(item));
+  grid.appendChild(label);
+ });
+ foodBox.appendChild(grid);
+}
+
+function selectedFoods(){
+ return [...document.querySelectorAll(".food input:checked")].map(x=>x.value);
+}
+function saveFoods(){
+ localStorage.setItem("mogumoguFoods",JSON.stringify(selectedFoods()));
+}
+function selectAll(value){
+ document.querySelectorAll(".food input").forEach(x=>x.checked=value);
+ saveFoods();
+}
+function shuffle(a){
+ return [...a].sort(()=>Math.random()-.5);
+}
+function pick(pool,used){
+ return shuffle(pool.filter(r=>!used.includes(r.name)))[0]||null;
+}
+function generate(){
+ const age=Number(document.getElementById("age").value);
+ const effort=document.getElementById("effort").value;
+ const selected=selectedFoods();
+ const message=document.getElementById("message");
+ const result=document.getElementById("result");
+ result.innerHTML="";
+ if(!selected.length){
+  message.textContent="まず、食べたことのある食材を選んでください。";
+  return;
+ }
+ const possible=recipes.filter(r=>r.min<=age&&r.items.every(i=>selected.includes(i)));
+ const used=[];
+ const menu=[];
+ const types=effort==="easy"?["主食","たんぱく質"]:
+  effort==="variety"?["主食","たんぱく質","副菜","果物"]:
+  ["主食","たんぱく質","副菜"];
+ for(const type of types){
+  const r=pick(possible.filter(x=>x.type===type),used);
+  if(r){menu.push(r);used.push(r.name);}
+ }
+ if(!menu.length){
+  message.textContent="選んだ食材で作れる献立がありません。食材を追加してみてください。";
+  return;
+ }
+ message.textContent="✨ 今日の献立ができました！";
+ menu.forEach(r=>{
+  const card=document.createElement("div");
+  card.className="card";
+  const name=document.createElement("strong");
+  name.textContent=r.type+"｜"+r.name;
+  const ingredients=document.createElement("p");
+  ingredients.textContent="食材："+r.items.join("・");
+  const steps=document.createElement("p");
+  steps.textContent="作り方："+r.steps;
+  card.append(name,ingredients,steps);
+  result.appendChild(card);
+ });
+ const history=JSON.parse(localStorage.getItem("mogumoguHistory")||"[]");
+ history.unshift({date:new Date().toLocaleDateString("ja-JP"),names:menu.map(r=>r.name)});
+ localStorage.setItem("mogumoguHistory",JSON.stringify(history.slice(0,10)));
+ showHistory();
+}
+function showHistory(){
+ const history=JSON.parse(localStorage.getItem("mogumoguHistory")||"[]");
+ const box=document.getElementById("history");
+ box.replaceChildren();
+ if(!history.length){box.textContent="まだ履歴がありません。";return;}
+ history.forEach(h=>{
+  const p=document.createElement("p");
+  p.textContent=h.date+"｜"+h.names.join("・");
+  box.appendChild(p);
+ });
+}
+function clearHistory(){
+ localStorage.removeItem("mogumoguHistory");
+ showHistory();
+}
+showHistory();
+</script>
+</body>
+</html>
