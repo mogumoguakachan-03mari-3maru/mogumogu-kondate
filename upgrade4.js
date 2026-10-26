@@ -1,1 +1,1439 @@
+<!DOCTYPE html>
+<html lang="ja">
 
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>もぐもぐ献立 Ver.4</title>
+
+<style>
+
+:root{
+  --orange:#e89158;
+  --green:#78977c;
+  --cream:#fffaf4;
+  --text:#35443b;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--text);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Hiragino Kaku Gothic ProN",
+    sans-serif;
+}
+
+header{
+  background:#fff0d8;
+  text-align:center;
+  padding:25px 15px;
+}
+
+h1{
+  margin:0;
+  font-size:28px;
+}
+
+header p{
+  font-size:13px;
+  margin:8px 0;
+}
+
+.recipe-count{
+  display:inline-block;
+  margin-top:10px;
+  padding:10px 18px;
+  background:white;
+  border-radius:25px;
+  font-size:14px;
+  font-weight:bold;
+  color:#52765b;
+}
+
+main{
+  max-width:780px;
+  margin:auto;
+  padding:15px;
+}
+
+section,
+.recipe-card{
+  background:white;
+  border:1px solid #eee1d1;
+  border-radius:16px;
+  padding:17px;
+  margin-bottom:16px;
+  box-shadow:0 2px 8px #00000008;
+}
+
+h2{
+  margin:0 0 13px;
+  font-size:19px;
+}
+
+h3{
+  font-size:17px;
+}
+
+p{
+  line-height:1.7;
+}
+
+.hint{
+  font-size:12px;
+  color:#777;
+  line-height:1.7;
+}
+
+select{
+  width:100%;
+  padding:13px;
+  border:1px solid #d9cbb8;
+  border-radius:10px;
+  background:white;
+  font-size:16px;
+}
+
+button{
+  border:0;
+  border-radius:10px;
+  padding:12px 16px;
+  font-size:14px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.btn-main{
+  background:var(--orange);
+  color:white;
+}
+
+.btn-green{
+  background:var(--green);
+  color:white;
+}
+
+.btn-light{
+  background:#f0ede6;
+  color:#455247;
+}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:13px 0;
+}
+
+/* カテゴリ */
+
+.category{
+  border:1px solid #e5e8df;
+  border-radius:12px;
+  overflow:hidden;
+  margin-bottom:11px;
+  background:white;
+}
+
+.category summary{
+  background:#f2f7ef;
+  padding:15px 13px;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+  list-style:none;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.category summary::-webkit-details-marker{
+  display:none;
+}
+
+.category summary::after{
+  content:"＋";
+  color:#69886d;
+  font-size:20px;
+}
+
+.category[open] summary::after{
+  content:"−";
+}
+
+.category-count{
+  font-size:11px;
+  color:#738074;
+  font-weight:normal;
+  margin-left:6px;
+}
+
+/* 食材選択 */
+
+.food-head{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 55px 55px;
+  gap:5px;
+  align-items:center;
+  padding:11px 12px;
+  background:#faf9f5;
+  font-size:11px;
+  color:#777;
+  text-align:center;
+}
+
+.food-head span:first-child{
+  text-align:left;
+}
+
+.food-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 55px 55px;
+  gap:5px;
+  align-items:center;
+  padding:10px 12px;
+  border-top:1px solid #f0f0ec;
+  font-size:14px;
+}
+
+.food-row:nth-child(even){
+  background:#fdfcf9;
+}
+
+.food-name{
+  overflow-wrap:anywhere;
+}
+
+.food-row label{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:27px;
+  cursor:pointer;
+}
+
+.food-row input{
+  width:20px;
+  height:20px;
+  accent-color:#719678;
+}
+
+.food-row input[data-kind="excluded"]{
+  accent-color:#d9776b;
+}
+
+.food-row.is-excluded{
+  background:#fff2f0;
+}
+
+.food-row.is-eaten .food-name{
+  font-weight:bold;
+}
+
+.food-summary{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:12px 0;
+}
+
+.summary-badge{
+  background:#eef5ed;
+  color:#507056;
+  border-radius:20px;
+  padding:7px 11px;
+  font-size:12px;
+}
+
+/* 献立 */
+
+.recipe-card h3{
+  margin:8px 0;
+  font-size:19px;
+}
+
+.tag{
+  display:inline-block;
+  padding:5px 11px;
+  margin:0 5px 5px 0;
+  border-radius:20px;
+  background:#fff0dc;
+  color:#79572e;
+  font-size:12px;
+}
+
+.recipe-meta{
+  font-size:12px;
+  color:#777;
+  margin:9px 0;
+}
+
+.recipe-card ul{
+  padding-left:22px;
+  line-height:1.9;
+}
+
+.recipe-card details{
+  margin:13px 0;
+}
+
+.recipe-card details summary{
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.recipe-card details p{
+  white-space:pre-wrap;
+}
+
+.notice{
+  background:#fff5e2;
+  border-left:4px solid #e6a54d;
+  border-radius:8px;
+  padding:13px;
+  font-size:12px;
+  line-height:1.8;
+  margin-bottom:20px;
+}
+
+#historyList{
+  font-size:13px;
+  line-height:1.8;
+}
+
+#historyList li{
+  margin-bottom:11px;
+}
+
+.status{
+  font-size:13px;
+  color:#58715e;
+  line-height:1.7;
+}
+
+@media(max-width:380px){
+  .food-row,
+  .food-head{
+    grid-template-columns:minmax(0,1fr) 48px 48px;
+    padding-left:8px;
+    padding-right:8px;
+  }
+}
+
+</style>
+
+<script src="recipes.js"></script>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>🥣 もぐもぐ献立</h1>
+
+<p>赤ちゃんの成長に合わせた献立づくり</p>
+
+<div class="recipe-count" id="recipeCount">
+  レシピを読み込み中…
+</div>
+
+</header>
+
+<main>
+
+<section>
+
+<h2>👶 お子さんの月齢</h2>
+
+<select id="age">
+
+<option value="5">5〜6か月（初期）</option>
+
+<option value="7">7〜8か月（中期）</option>
+
+<option value="9">9〜11か月（後期）</option>
+
+<option value="12">12〜18か月（完了期）</option>
+
+</select>
+
+<p class="hint">
+月齢に合うレシピを候補にします。
+実際の食べやすさは、お子さんの発達に合わせて調整してください。
+</p>
+
+</section>
+
+<section>
+
+<h2>🥕 食べられる食材を登録</h2>
+
+<p class="hint">
+食材をカテゴリごとに整理しました。
+カテゴリ名をタップすると、一覧を開閉できます。
+</p>
+
+<div class="food-summary">
+
+<span class="summary-badge" id="eatenCount">
+  食べたことがある：0品目
+</span>
+
+<span class="summary-badge" id="excludedCount">
+  除外：0品目
+</span>
+
+</div>
+
+<div class="actions">
+
+<button class="btn-light" id="checkAll">
+すべてチェック
+</button>
+
+<button class="btn-light" id="clearAll">
+食べたチェックを外す
+</button>
+
+</div>
+
+<p class="hint">
+※「すべてチェック」は動作確認用です。
+実際の献立では、食べたことのある食材だけを登録してください。
+</p>
+
+<div id="foodCategories"></div>
+
+</section>
+
+<section>
+
+<h2>🍽️ 献立を作成</h2>
+
+<label for="count">
+<strong>提案する料理数</strong>
+</label>
+
+<select id="count">
+
+<option value="2">2品</option>
+
+<option value="3" selected>3品</option>
+
+<option value="4">4品</option>
+
+</select>
+
+<div class="actions">
+
+<button class="btn-main" id="generate">
+✨ 献立を提案する
+</button>
+
+<button class="btn-light" id="reset">
+設定を初期化
+</button>
+
+</div>
+
+<p class="status" id="status"></p>
+
+</section>
+
+<div id="results"></div>
+
+<section>
+
+<h2>🕘 献立履歴</h2>
+
+<div class="actions">
+
+<button class="btn-light" id="clearHistory">
+履歴を消去
+</button>
+
+</div>
+
+<div id="historyList">
+まだ履歴はありません。
+</div>
+
+</section>
+
+<div class="notice">
+
+<strong>⚠️ ご利用上の注意</strong><br>
+
+このアプリのレシピは試作段階です。
+月齢、分量、調理時間、栄養量、安全性について
+専門的な検証は完了していません。<br>
+
+食材の導入状況、アレルギー、硬さ、大きさ、
+飲み込みやすさを確認してください。
+肉・魚・卵は十分に加熱し、
+魚の骨や窒息につながる形状に注意してください。
+
+</div>
+
+</main>
+
+<script>
+
+"use strict";
+
+(() => {
+
+/* ===============================
+   基本設定
+=============================== */
+
+const recipes =
+  Array.isArray(window.MOGU_RECIPES)
+    ? window.MOGU_RECIPES
+    : [];
+
+const $ = id => document.getElementById(id);
+
+const SETTINGS_KEY = "mogumogu_v4_settings";
+const HISTORY_KEY = "mogumogu_v4_history";
+
+const normalize = value =>
+  String(value ?? "").trim();
+
+function escapeHTML(value){
+
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    character => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    }[character])
+  );
+
+}
+
+/* ===============================
+   食材カテゴリ
+=============================== */
+
+const categories = [
+
+{
+  name:"🍚 主食・穀類",
+  foods:[
+    "米がゆ",
+    "軟飯",
+    "ごはん",
+    "うどん",
+    "そうめん",
+    "パスタ",
+    "マカロニ",
+    "食パン",
+    "オートミール"
+  ]
+},
+
+{
+  name:"🥕 野菜・いも類",
+  foods:[
+    "にんじん",
+    "かぼちゃ",
+    "ブロッコリー",
+    "ほうれん草",
+    "小松菜",
+    "キャベツ",
+    "白菜",
+    "大根",
+    "かぶ",
+    "玉ねぎ",
+    "トマト",
+    "オクラ",
+    "とうもろこし",
+    "じゃがいも",
+    "さつまいも",
+    "れんこん"
+  ]
+},
+
+{
+  name:"🍗 肉類",
+  foods:[
+    "鶏ひき肉",
+    "鶏むね肉",
+    "鶏ささみ",
+    "豚赤身肉",
+    "牛赤身肉"
+  ]
+},
+
+{
+  name:"🐟 魚介類",
+  foods:[
+    "白身魚",
+    "鮭",
+    "まぐろ",
+    "かつお",
+    "さば",
+    "ツナ水煮",
+    "しらす"
+  ]
+},
+
+{
+  name:"🥚 卵・大豆製品",
+  foods:[
+    "全卵",
+    "卵黄",
+    "卵白",
+    "豆腐",
+    "納豆",
+    "きな粉"
+  ]
+},
+
+{
+  name:"🥛 乳製品",
+  foods:[
+    "プレーンヨーグルト",
+    "ヨーグルト",
+    "チーズ",
+    "牛乳"
+  ]
+},
+
+{
+  name:"🍎 果物",
+  foods:[
+    "りんご",
+    "バナナ",
+    "いちご",
+    "桃",
+    "洋梨",
+    "みかん"
+  ]
+},
+
+{
+  name:"🍄 きのこ類",
+  foods:[
+    "しめじ",
+    "しいたけ",
+    "えのき"
+  ]
+}
+
+];
+
+/* ===============================
+   レシピに使われている全食材
+=============================== */
+
+const allFoods = [
+  ...new Set(
+    recipes.flatMap(recipe =>
+      Array.isArray(recipe.ingredients)
+        ? recipe.ingredients.map(
+            item => normalize(item[0])
+          )
+        : []
+    )
+  )
+].filter(Boolean);
+
+/* ===============================
+   カテゴリ未登録の食材も表示
+=============================== */
+
+const categorizedFoods = new Set(
+  categories.flatMap(category => category.foods)
+);
+
+const otherFoods = allFoods.filter(
+  food => !categorizedFoods.has(food)
+);
+
+if(otherFoods.length){
+
+  categories.push({
+    name:"📦 その他の食材",
+    foods:otherFoods
+  });
+
+}
+
+/* ===============================
+   保存済み設定を読み込み
+=============================== */
+
+let saved = {};
+
+try{
+
+  saved = JSON.parse(
+    localStorage.getItem(SETTINGS_KEY) || "{}"
+  ) || {};
+
+}catch(error){
+
+  saved = {};
+
+}
+
+let eaten = new Set(
+  Array.isArray(saved.eaten)
+    ? saved.eaten
+    : []
+);
+
+let excluded = new Set(
+  Array.isArray(saved.excluded)
+    ? saved.excluded
+    : []
+);
+
+if(saved.age){
+  $("age").value = String(saved.age);
+}
+
+if(saved.count){
+  $("count").value = String(saved.count);
+}
+
+/* ===============================
+   設定保存
+=============================== */
+
+function saveSettings(){
+
+  try{
+
+    localStorage.setItem(
+      SETTINGS_KEY,
+      JSON.stringify({
+        eaten:[...eaten],
+        excluded:[...excluded],
+        age:$("age").value,
+        count:$("count").value
+      })
+    );
+
+  }catch(error){
+
+    console.warn("設定を保存できませんでした。");
+
+  }
+
+}
+
+/* ===============================
+   カテゴリ別食材表示
+=============================== */
+
+function renderCategories(){
+
+  const container = $("foodCategories");
+
+  const previouslyOpen = new Set(
+    [...container.querySelectorAll(
+      "details.category[open]"
+    )].map(item => item.dataset.category)
+  );
+
+  const isFirstRender =
+    container.children.length === 0;
+
+  container.innerHTML = categories.map(
+    (category,index) => {
+
+      const foods = category.foods.filter(
+        food => allFoods.includes(food)
+      );
+
+      if(!foods.length){
+        return "";
+      }
+
+      const eatenInCategory = foods.filter(
+        food => eaten.has(food)
+      ).length;
+
+      const shouldOpen = isFirstRender
+        ? index === 0
+        : previouslyOpen.has(category.name);
+
+      return `
+
+      <details
+        class="category"
+        data-category="${escapeHTML(category.name)}"
+        ${shouldOpen ? "open" : ""}
+      >
+
+        <summary>
+
+          <span>
+            ${escapeHTML(category.name)}
+            <span class="category-count">
+              ${eatenInCategory}/${foods.length}品目
+            </span>
+          </span>
+
+        </summary>
+
+        <div class="food-head">
+
+          <span>食材</span>
+          <span>食べた</span>
+          <span>除外</span>
+
+        </div>
+
+        ${foods.map(food => `
+
+          <div class="food-row
+            ${eaten.has(food) ? "is-eaten" : ""}
+            ${excluded.has(food) ? "is-excluded" : ""}
+          ">
+
+            <span class="food-name">
+              ${escapeHTML(food)}
+            </span>
+
+            <label aria-label="${escapeHTML(food)}を食べた">
+
+              <input
+                type="checkbox"
+                data-kind="eaten"
+                data-food="${escapeHTML(food)}"
+                ${eaten.has(food) ? "checked" : ""}
+              >
+
+            </label>
+
+            <label aria-label="${escapeHTML(food)}を除外">
+
+              <input
+                type="checkbox"
+                data-kind="excluded"
+                data-food="${escapeHTML(food)}"
+                ${excluded.has(food) ? "checked" : ""}
+              >
+
+            </label>
+
+          </div>
+
+        `).join("")}
+
+      </details>
+
+      `;
+
+    }
+  ).join("");
+
+  updateFoodCounts();
+
+}
+
+/* ===============================
+   食材数表示
+=============================== */
+
+function updateFoodCounts(){
+
+  const eatenCount = allFoods.filter(
+    food => eaten.has(food)
+  ).length;
+
+  const excludedCount = allFoods.filter(
+    food => excluded.has(food)
+  ).length;
+
+  $("eatenCount").textContent =
+    `食べたことがある：${eatenCount}品目`;
+
+  $("excludedCount").textContent =
+    `除外：${excludedCount}品目`;
+
+}
+
+/* ===============================
+   レシピの適合判定
+=============================== */
+
+function isValid(recipe){
+
+  if(
+    Number(recipe.minAge) >
+    Number($("age").value)
+  ){
+    return false;
+  }
+
+  if(
+    !Array.isArray(recipe.ingredients) ||
+    recipe.ingredients.length === 0
+  ){
+    return false;
+  }
+
+  return recipe.ingredients.every(item => {
+
+    const food = normalize(item[0]);
+
+    return eaten.has(food) &&
+           !excluded.has(food);
+
+  });
+
+}
+
+/* ===============================
+   シャッフル
+=============================== */
+
+function shuffle(items){
+
+  const result = [...items];
+
+  for(let i=result.length-1;i>0;i--){
+
+    const j = Math.floor(
+      Math.random() * (i+1)
+    );
+
+    [result[i],result[j]] =
+      [result[j],result[i]];
+
+  }
+
+  return result;
+
+}
+
+/* ===============================
+   献立作成
+=============================== */
+
+let selected = [];
+
+function generateMenu(){
+
+  const candidates = shuffle(
+    recipes.filter(isValid)
+  );
+
+  const count = Number(
+    $("count").value
+  );
+
+  if(!candidates.length){
+
+    selected = [];
+
+    renderResults();
+
+    $("status").textContent =
+      "条件に合うレシピがありません。食べたことのある食材や除外設定を確認してください。";
+
+    return;
+
+  }
+
+  const chosen = [];
+
+  const types = [
+    "主食",
+    "主菜",
+    "副菜",
+    "果物"
+  ];
+
+  for(const type of types){
+
+    if(chosen.length >= count){
+      break;
+    }
+
+    const found = candidates.find(
+      recipe =>
+        recipe.type === type &&
+        !chosen.includes(recipe)
+    );
+
+    if(found){
+      chosen.push(found);
+    }
+
+  }
+
+  for(const recipe of candidates){
+
+    if(chosen.length >= count){
+      break;
+    }
+
+    if(!chosen.includes(recipe)){
+      chosen.push(recipe);
+    }
+
+  }
+
+  selected = chosen;
+
+  renderResults();
+
+  $("status").textContent =
+    `${candidates.length}品の候補から、${selected.length}品を提案しました。`;
+
+  saveHistory();
+
+}
+
+/* ===============================
+   1品だけ変更
+=============================== */
+
+function rerollRecipe(index){
+
+  const current = selected[index];
+
+  if(!current){
+    return;
+  }
+
+  const pool = shuffle(
+    recipes.filter(isValid).filter(
+      recipe =>
+        recipe.id !== current.id &&
+        !selected.some(
+          (item,i) =>
+            i !== index &&
+            item.id === recipe.id
+        )
+    )
+  );
+
+  const sameType = pool.find(
+    recipe => recipe.type === current.type
+  );
+
+  const replacement = sameType || pool[0];
+
+  if(!replacement){
+
+    alert(
+      "変更できる別の料理がありません。"
+    );
+
+    return;
+
+  }
+
+  selected[index] = replacement;
+
+  renderResults();
+
+  saveHistory();
+
+}
+
+/* ===============================
+   献立表示
+=============================== */
+
+function renderResults(){
+
+  const container = $("results");
+
+  if(!selected.length){
+
+    container.innerHTML = "";
+
+    return;
+
+  }
+
+  container.innerHTML = `
+
+    <section>
+
+      <h2>🍴 今日の献立</h2>
+
+      <p class="hint">
+        気に入らない料理は、
+        1品ずつ変更できます。
+      </p>
+
+    </section>
+
+  ` + selected.map((recipe,index) => `
+
+    <article class="recipe-card">
+
+      <span class="tag">
+        ${escapeHTML(recipe.type || "料理")}
+      </span>
+
+      <span class="tag">
+        ${escapeHTML(recipe.minAge)}か月〜
+      </span>
+
+      <h3>
+        ${escapeHTML(recipe.name)}
+      </h3>
+
+      <div class="recipe-meta">
+
+        ⏱ 調理時間の目安：
+        ${escapeHTML(recipe.time)}分
+
+        <br>
+
+        レシピID：
+        ${escapeHTML(recipe.id)}
+
+      </div>
+
+      <details open>
+
+        <summary>
+          📖 材料・作り方を見る
+        </summary>
+
+        <h4>材料（試作目安）</h4>
+
+        <ul>
+
+          ${(recipe.ingredients || []).map(
+            item => `
+
+              <li>
+                ${escapeHTML(item[0])}：
+                ${escapeHTML(item[1])}g
+              </li>
+
+            `
+          ).join("")}
+
+        </ul>
+
+        <h4>作り方</h4>
+
+        <p>
+          ${escapeHTML(recipe.steps || "準備中")}
+        </p>
+
+      </details>
+
+      <button
+        class="btn-green"
+        data-reroll="${index}"
+      >
+        🔄 この料理を変更
+      </button>
+
+    </article>
+
+  `).join("");
+
+}
+
+/* ===============================
+   履歴
+=============================== */
+
+function getHistory(){
+
+  try{
+
+    const result = JSON.parse(
+      localStorage.getItem(HISTORY_KEY) || "[]"
+    );
+
+    return Array.isArray(result)
+      ? result
+      : [];
+
+  }catch(error){
+
+    return [];
+
+  }
+
+}
+
+function saveHistory(){
+
+  if(!selected.length){
+    return;
+  }
+
+  const history = getHistory();
+
+  history.unshift({
+
+    date:new Date().toLocaleString("ja-JP"),
+
+    names:selected.map(
+      recipe => recipe.name
+    )
+
+  });
+
+  try{
+
+    localStorage.setItem(
+      HISTORY_KEY,
+      JSON.stringify(
+        history.slice(0,20)
+      )
+    );
+
+  }catch(error){
+
+    console.warn(
+      "履歴を保存できませんでした。"
+    );
+
+  }
+
+  renderHistory();
+
+}
+
+function renderHistory(){
+
+  const history = getHistory();
+
+  if(!history.length){
+
+    $("historyList").textContent =
+      "まだ履歴はありません。";
+
+    return;
+
+  }
+
+  $("historyList").innerHTML = `
+
+    <ol>
+
+      ${history.map(item => `
+
+        <li>
+
+          <small>
+            ${escapeHTML(item.date)}
+          </small>
+
+          <br>
+
+          ${(item.names || []).map(
+            escapeHTML
+          ).join(" ／ ")}
+
+        </li>
+
+      `).join("")}
+
+    </ol>
+
+  `;
+
+}
+
+/* ===============================
+   イベント
+=============================== */
+
+document.addEventListener(
+  "change",
+  event => {
+
+    const target = event.target;
+
+    if(target.matches("input[data-food]")){
+
+      const food = target.dataset.food;
+
+      const kind = target.dataset.kind;
+
+      if(kind === "eaten"){
+
+        if(target.checked){
+          eaten.add(food);
+        }else{
+          eaten.delete(food);
+        }
+
+      }
+
+      if(kind === "excluded"){
+
+        if(target.checked){
+          excluded.add(food);
+        }else{
+          excluded.delete(food);
+        }
+
+      }
+
+      saveSettings();
+
+      renderCategories();
+
+      return;
+
+    }
+
+    if(
+      target.id === "age" ||
+      target.id === "count"
+    ){
+
+      saveSettings();
+
+    }
+
+  }
+);
+
+document.addEventListener(
+  "click",
+  event => {
+
+    const button = event.target.closest(
+      "[data-reroll]"
+    );
+
+    if(button){
+
+      rerollRecipe(
+        Number(button.dataset.reroll)
+      );
+
+    }
+
+  }
+);
+
+/* ===============================
+   ボタン
+=============================== */
+
+$("checkAll").onclick = () => {
+
+  eaten = new Set(allFoods);
+
+  saveSettings();
+
+  renderCategories();
+
+};
+
+$("clearAll").onclick = () => {
+
+  eaten.clear();
+
+  saveSettings();
+
+  renderCategories();
+
+};
+
+$("generate").onclick = generateMenu;
+
+$("reset").onclick = () => {
+
+  if(!confirm(
+    "月齢と食材設定を初期化しますか？"
+  )){
+    return;
+  }
+
+  eaten.clear();
+
+  excluded.clear();
+
+  selected = [];
+
+  $("age").value = "5";
+
+  $("count").value = "3";
+
+  saveSettings();
+
+  renderCategories();
+
+  renderResults();
+
+  $("status").textContent =
+    "設定を初期化しました。";
+
+};
+
+$("clearHistory").onclick = () => {
+
+  if(!confirm(
+    "献立履歴を消去しますか？"
+  )){
+    return;
+  }
+
+  localStorage.removeItem(
+    HISTORY_KEY
+  );
+
+  renderHistory();
+
+};
+
+/* ===============================
+   初期表示
+=============================== */
+
+renderCategories();
+
+renderHistory();
+
+const recipeCount = recipes.length;
+
+$("recipeCount").textContent =
+  `📚 レシピ ${recipeCount}品を読み込みました`;
+
+if(recipeCount === 300){
+
+  $("status").textContent =
+    "300品のレシピを読み込みました。食材を設定して献立を作成してください。";
+
+}else if(recipeCount === 0){
+
+  $("status").textContent =
+    "レシピを読み込めませんでした。recipes.js が同じフォルダにあるか確認してください。";
+
+}else{
+
+  $("status").textContent =
+    `${recipeCount}品を読み込みました。300品と異なるため、recipes.js の内容を確認してください。`;
+
+}
+
+})();
+</script>
+
+</body>
+</html>
