@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>もぐもぐ献立 Ver.3</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff8f0;color:#594a40;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}
+header{background:linear-gradient(120deg,#ffad83,#f18fa0);color:white;text-align:center;padding:28px 12px}
+h1{margin:0;font-size:29px}
+header p{margin:9px 0 0}
+main{max-width:780px;margin:auto;padding:12px}
+section{background:white;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 3px 12px #d9c7b84d}
+h2{color:#d67a58;font-size:19px;margin:0 0 13px}
+h3{font-size:15px;color:#82644f;margin:17px 0 8px}
+select,button,input{font:inherit}
+select{width:100%;padding:12px;border:1px solid #ddd0c4;border-radius:11px;background:white}
+button{background:#ed906f;color:white;border:0;border-radius:11px;padding:11px;font-weight:bold;cursor:pointer}
+button:active{opacity:.7}
+.small{background:#f3e4d7;color:#795d49;font-size:13px;padding:9px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.food{display:flex;align-items:center;gap:6px;background:#fff6ed;border-radius:9px;padding:10px 7px;font-size:13px}
+.food input{accent-color:#ef9774;width:17px;height:17px}
+.exclude{background:#fce9e8}
+.primary{display:block;width:100%;font-size:19px;padding:17px}
+.note{font-size:13px;color:#80736b;line-height:1.7}
+.card{background:#fff8ef;border-left:5px solid #f3a57b;border-radius:12px;padding:15px;margin:13px 0}
+.card strong{font-size:17px}
+.card p{font-size:13px;line-height:1.7;margin:7px 0}
+.energy{font-size:19px;color:#cb7452;font-weight:bold}
+.total{background:#ffedda;border-radius:14px;padding:17px;text-align:center;margin:14px 0}
+.total b{font-size:27px;color:#d77450}
+#status{font-weight:bold;color:#bc7656}
+footer{text-align:center;padding:22px;color:#978579;font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🥣 もぐもぐ献立</h1>
+<p>赤ちゃんに合わせた、今日のおいしい献立 🌷</p>
+</header>
+
+<main>
+
+<section>
+<h2>👶 赤ちゃんの月齢</h2>
+<select id="age">
+<option value="5">5〜6か月（初期）</option>
+<option value="7">7〜8か月（中期）</option>
+<option value="9">9〜11か月（後期）</option>
+<option value="12">12〜18か月（完了期）</option>
+</select>
+<p class="note">月齢は一般的な目安です。発達状況や食べ慣れた状態に合わせてください。</p>
+</section>
+
+<section>
+<h2>🥕 食べたことのある食材</h2>
+<p class="note">チェックした食材だけで献立を作ります。月齢を変えても登録内容は残ります。</p>
+<div class="row">
+<button class="small" id="all">表示中をすべて選択</button>
+<button class="small" id="none">表示中を解除</button>
+</div>
+<div id="foods"></div>
+</section>
+
+<section>
+<h2>🚫 使用しない食材</h2>
+<p class="note">アレルギーなどで避けたい食材を選んでください。登録した食材は献立から除外します。</p>
+<div id="blocked"></div>
+</section>
+
+<section>
+<h2>🍳 今日の調理スタイル</h2>
+<select id="effort">
+<option value="easy">簡単（2品程度）</option>
+<option value="normal" selected>ふつう（3品程度）</option>
+<option value="many">品数多め（4品程度）</option>
+</select>
+</section>
+
+<section>
+<button class="primary" id="generate">✨ 今日の献立を作る</button>
+<p id="status"></p>
+<div id="result"></div>
+</section>
+
+<section>
+<h2>📖 最近の献立</h2>
+<div id="history" class="note">まだ履歴がありません。</div>
+<button class="small" id="clear">履歴を削除</button>
+</section>
+
+<section>
+<h2>🧡 ご利用にあたって</h2>
+<p class="note">
+このアプリは離乳食の献立アイデアを提供する試作版です。
+エネルギーは概算の参考値であり、栄養充足やアレルギーの安全性を保証するものではありません。
+母乳・ミルクから得るエネルギーは含みません。
+初めての食材は少量から進め、食べ慣れた食材を使ってください。
+はちみつは1歳未満に与えないでください。
+ぶどうなどの丸い果物は丸ごと与えず、窒息を防ぐ形状にしてください。
+魚の骨や加熱不足にも注意してください。
+</p>
+</section>
+</main>
+
+<footer>もぐもぐ献立 Ver.3｜設定と履歴はこのブラウザに保存されます</footer>
+
+<script>
+"use strict";
+
+const $=id=>document.getElementById(id);
+const KEY="mogumogu_v3_";
+
+function load(k,f){
+ try{return JSON.parse(localStorage.getItem(KEY+k))??f}
+ catch(e){return f}
+}
+function save(k,v){
+ try{localStorage.setItem(KEY+k,JSON.stringify(v))}
+ catch(e){}
+}
+
+/*
+ 食材のkcalは100g当たりの概算。
+ 食品の状態や製品により変動する。
+*/
+const D={
+"主食":[
+["米がゆ",5,65],["軟飯",9,115],["ごはん",12,156],
+["食パン",7,248],["うどん",7,95],
+["そうめん",7,114],["オートミール",7,350],
+["パスタ",9,150],["マカロニ",9,150]
+],
+"野菜・いも":[
+["にんじん",5,30],["かぼちゃ",5,80],
+["じゃがいも",5,59],["さつまいも",5,126],
+["ほうれん草",5,23],["小松菜",5,13],
+["ブロッコリー",5,30],["大根",5,15],
+["かぶ",5,18],["白菜",5,13],
+["キャベツ",5,23],["玉ねぎ",5,33],
+["トマト",5,20],["ズッキーニ",7,16],
+["なす",7,18],["きゅうり",7,13],
+["とうもろこし",7,90],["グリーンピース",7,76],
+["いんげん",7,23],["カリフラワー",7,27],
+["ピーマン",9,20],["パプリカ",9,28],
+["オクラ",9,26],["アスパラガス",9,21],
+["れんこん",9,66],["ごぼう",12,58],
+["しめじ",12,26]
+],
+"たんぱく質・乳":[
+["豆腐",5,56],["白身魚",5,75],
+["しらす",5,113],["卵黄",5,336],
+["プレーンヨーグルト",7,56],["鮭",7,124],
+["鶏ささみ",7,98],["鶏むね肉",7,105],
+["納豆",7,184],["きな粉",7,451],
+["全卵",7,142],["鶏ひき肉",9,171],
+["豚赤身肉",9,120],["牛赤身肉",9,160],
+["まぐろ",9,115],["かつお",9,108],
+["ツナ水煮",9,70],["チーズ",9,280],
+["さば",12,211]
+],
+"果物":[
+["りんご",5,53],["バナナ",5,93],
+["桃",5,38],["梨",5,38],
+["みかん",5,49],["いちご",7,31],
+["洋梨",7,48],["メロン",7,40],
+["スイカ",7,41],["柿",7,63],
+["ぶどう",9,69],["キウイ",9,51],
+["ブルーベリー",9,48],["マンゴー",12,68],
+["パイナップル",12,54],["さくらんぼ",12,64]
+]
+};
+
+const INFO={};
+Object.entries(D).forEach(([group,rows])=>{
+ rows.forEach(([name,min,kcal])=>{
+  INFO[name]={group,min,kcal};
+ });
+});
+
+let eaten=load("eaten",[]);
+let blocked=load("blocked",[]);
+let history=load("history",[]);
+let menu=[];
+
+$("age").value=String(load("age",5));
+$("effort").value=load("effort","normal");
+
+function box(name,mode){
+ const label=document.createElement("label");
+ label.className="food"+(mode==="blocked"?" exclude":"");
+ const cb=document.createElement("input");
+ cb.type="checkbox";
+ const arr=mode==="eaten"?eaten:blocked;
+ cb.checked=arr.includes(name);
+
+ cb.onchange=()=>{
+  const list=mode==="eaten"?eaten:blocked;
+  if(cb.checked&&!list.includes(name))list.push(name);
+  if(!cb.checked){
+   const i=list.indexOf(name);
+   if(i>=0)list.splice(i,1);
+  }
+  save(mode,list);
+ };
+ label.append(cb,document.createTextNode(name));
+ return label;
+}
+
+function renderFoods(){
+ const age=+$("age").value;
+ $("foods").replaceChildren();
+ $("blocked").replaceChildren();
+
+ for(const [group,rows] of Object.entries(D)){
+  const visible=rows.filter(x=>x[1]<=age);
+  if(!visible.length)continue;
+
+  const h=document.createElement("h3");
+  h.textContent=group;
+  $("foods").append(h);
+
+  const grid=document.createElement("div");
+  grid.className="grid";
+  visible.forEach(x=>grid.append(box(x[0],"eaten")));
+  $("foods").append(grid);
+ }
+
+ for(const [group,rows] of Object.entries(D)){
+  const h=document.createElement("h3");
+  h.textContent=group;
+  $("blocked").append(h);
+
+  const grid=document.createElement("div");
+  grid.className="grid";
+  rows.forEach(x=>grid.append(box(x[0],"blocked")));
+  $("blocked").append(grid);
+ }
+}
+
+$("age").onchange=()=>{
+ save("age",+$("age").value);
+ renderFoods();
+};
+
+$("effort").onchange=()=>{
+ save("effort",$("effort").value);
+};
+
+$("all").onclick=()=>{
+ const age=+$("age").value;
+ Object.values(D).flat().forEach(([n,min])=>{
+  if(min<=age&&!eaten.includes(n))eaten.push(n);
+ });
+ save("eaten",eaten);
+ renderFoods();
+};
+
+$("none").onclick=()=>{
+ const age=+$("age").value;
+ eaten=eaten.filter(n=>INFO[n]&&INFO[n].min>age);
+ save("eaten",eaten);
+ renderFoods();
+};
+
+function portion(name,age){
+ const g=INFO[name].group;
+
+ if(g==="主食"){
+  if(name==="オートミール")return age<9?8:age<12?12:18;
+  if(name==="食パン")return age<9?12:age<12?20:30;
+  return age<7?30:age<9?55:age<12?75:90;
+ }
+ if(g==="野菜・いも")
+  return age<7?8:age<9?15:age<12?20:25;
+ if(g==="果物")
+  return age<7?8:age<9?15:age<12?20:30;
+ if(name==="卵黄")
+  return age<7?2:age<9?5:10;
+ if(name==="全卵")
+  return age<9?8:age<12?15:25;
+ if(name==="きな粉")
+  return age<9?2:age<12?3:5;
+ if(name==="チーズ")
+  return age<12?5:10;
+ if(name==="プレーンヨーグルト")
+  return age<9?30:age<12?45:60;
+ if(name==="豆腐")
+  return age<7?10:age<9?35:age<12?40:50;
+ return age<7?5:age<9?12:age<12?15:20;
+}
+
+function kcal(ingredients){
+ return ingredients.reduce((sum,x)=>
+  sum+x.g*INFO[x.name].kcal/100,0);
+}
+
+function make(type,name,items,steps,age){
+ const ingredients=items.map(([n,m=1])=>({
+  name:n,g:Math.max(1,Math.round(portion(n,age)*m))
+ }));
+ return{
+  type,name,ingredients,steps,
+  kcal:kcal(ingredients),
+  id:type+"|"+name+"|"+items.map(x=>x[0]).join(",")
+ };
+}
+
+function candidates(){
+ const age=+$("age").value;
+ const allowed=new Set(
+  eaten.filter(n=>!blocked.includes(n)&&INFO[n]&&INFO[n].min<=age)
+ );
+ const has=n=>allowed.has(n);
+ const group=g=>D[g].filter(x=>has(x[0])).map(x=>x[0]);
+
+ const grains=group("主食");
+ const veg=group("野菜・いも");
+ const protein=group("たんぱく質・乳");
+ const fruit=group("果物");
+
+ const out=[];
+ const add=(t,n,items,steps)=>{
+  if(items.every(x=>has(x[0])))
+   out.push(make(t,n,items,steps,age));
+ };
+
+ const soft="十分に加熱し、月齢に合わせてなめらかにつぶす・細かく刻むなど、食べやすい固さと形状にする。";
+ const mix="それぞれ十分に加熱してから混ぜ、月齢に合う固さと大きさに仕上げる。";
+ const fruitStep="皮・種・芯などを除き、必要に応じて加熱する。丸い果物は丸ごと与えず、窒息しない形状にする。";
+
+ const baseName=g=>{
+  if(g==="米がゆ")return"おかゆ";
+  if(g==="軟飯")return"軟飯";
+  if(g==="ごはん")return"ごはん";
+  if(g==="食パン")return"パンがゆ";
+  if(g==="うどん")return"やわらかうどん";
+  if(g==="そうめん")return"やわらかそうめん";
+  if(g==="オートミール")return"オートミールがゆ";
+  return"やわらか"+g;
+ };
+
+ for(const g of grains){
+  const base=baseName(g);
+  add("主食",base,[[g]],soft);
+
+  for(const v of veg){
+   add("主食",v+"入り"+base,
+    [[g],[v,0.6]],mix);
+  }
+
+  for(const p of protein){
+   if(["チーズ","きな粉","プレーンヨーグルト"].includes(p))continue;
+
+   add("主食",p+"入り"+base,
+    [[g],[p,0.7]],mix);
+
+   for(const v of veg){
+    add("主食",p+"と"+v+"の"+base,
+     [[g],[p,0.6],[v,0.6]],mix);
+   }
+  }
+ }
+
+ for(const v of veg){
+  add("副菜",v+"のやわらか煮",[[v]],soft);
+
+  for(const w of veg){
+   if(v>=w)continue;
+   add("副菜",v+"と"+w+"の野菜煮",
+    [[v,0.7],[w,0.7]],mix);
+  }
+ }
+
+ for(const p of protein){
+  if(p==="卵黄"||p==="全卵"){
+   add("たんぱく質",p+"のしっかり加熱",
+    [[p]],"卵は中心まで十分に加熱する。食べ慣れた量と調理形態を優先する。");
+  }else{
+   add("たんぱく質",p+"のやわらか煮",
+    [[p]],soft);
+  }
+
+  for(const v of veg){
+   const title=
+    p==="豆腐"?"豆腐と"+v+"のあんかけ":
+    p==="鶏ひき肉"?"鶏そぼろと"+v+"の煮物":
+    p==="鮭"?"鮭と"+v+"のやわらか煮":
+    p+"と"+v+"の煮物";
+
+   add("たんぱく質",title,
+    [[p,0.8],[v,0.6]],mix);
+  }
+ }
+
+ for(const f of fruit){
+  add("果物",f+"のデザート",
+   [[f]],fruitStep);
+
+  if(has("プレーンヨーグルト")){
+   add("果物",f+"ヨーグルト",
+    [[f,0.8],["プレーンヨーグルト",0.8]],
+    fruitStep+"無糖ヨーグルトと合わせる。");
+  }
+
+  for(const v of ["さつまいも","かぼちゃ"]){
+   add("果物",f+"と"+v+"のやわらか煮",
+    [[f,0.7],[v,0.7]],mix);
+  }
+ }
+
+ if(age>=9){
+  for(const v of veg){
+   add("たんぱく質",v+"入り鶏つくね",
+    [["鶏ひき肉"],[v,0.5]],
+    "材料を細かくして混ぜ、食べやすい大きさに成形し、中心まで十分に加熱する。つなぎなしでまとまらない場合は無理に成形しない。");
+
+   add("副菜",v+"と豆腐のふんわり和え",
+    [["豆腐",0.7],[v,0.7]],mix);
+
+   add("たんぱく質","鮭の"+v+"あんかけ",
+    [["鮭"],[v,0.7]],
+    "鮭の骨と皮を完全に除き、十分に加熱する。やわらかく煮た野菜を合わせる。");
+  }
+ }
+
+ if(age>=12){
+  for(const p of ["鶏ひき肉","豚赤身肉","牛赤身肉"]){
+   for(const v of veg){
+    add("たんぱく質",v+"入り"+p+"のミニハンバーグ",
+     [[p],[v,0.5]],
+     "肉と細かくした野菜を混ぜて小さく成形し、中心まで十分に加熱する。固くならないように仕上げる。");
+   }
+  }
+ }
+
+ return out;
+}
+
+function penalty(r){
+ let score=0;
+ history.slice(0,6).forEach((h,i)=>{
+  if(h.ids&&h.ids.includes(r.id))score+=(7-i)*5;
+ });
+ return score;
+}
+
+function choose(type,options,used){
+ const pool=options.filter(r=>
+  r.type===type&&!used.some(x=>x.id===r.id)
+ );
+ if(!pool.length)return null;
+
+ const usedIngredients=new Set(
+  used.flatMap(r=>r.ingredients.map(x=>x.name))
+ );
+
+ return pool.map(r=>{
+  const overlap=r.ingredients.filter(x=>usedIngredients.has(x.name)).length;
+  const score=penalty(r)+overlap*8+Math.random()*12;
+  return{r,score};
+ }).sort((a,b)=>a.score-b.score)[0].r;
+}
+
+function record(){
+ history.unshift({
+  date:new Date().toLocaleDateString("ja-JP"),
+  names:menu.map(x=>x.name),
+  ids:menu.map(x=>x.id)
+ });
+ history=history.slice(0,12);
+ save("history",history);
+ renderHistory();
+}
+
+function renderHistory(){
+ const root=$("history");
+ root.replaceChildren();
+
+ if(!history.length){
+  root.textContent="まだ履歴がありません。";
+  return;
+ }
+
+ history.forEach(h=>{
+  const p=document.createElement("p");
+  p.textContent=h.date+"｜"+h.names.join("・");
+  root.append(p);
+ });
+}
+
+function renderMenu(){
+ const root=$("result");
+ root.replaceChildren();
+
+ if(!menu.length)return;
+
+ const total=menu.reduce((s,r)=>s+r.kcal,0);
+ const summary=document.createElement("div");
+ summary.className="total";
+
+ const title=document.createElement("div");
+ title.textContent="🍽️ この献立の推定エネルギー";
+
+ const energy=document.createElement("b");
+ energy.textContent=Math.round(total)+" kcal";
+
+ const note=document.createElement("div");
+ note.className="note";
+ note.textContent="材料の概算値から計算。実際の摂取量や栄養充足を示すものではありません。";
+
+ summary.append(title,energy,note);
+ root.append(summary);
+
+ menu.forEach((r,i)=>{
+  const card=document.createElement("div");
+  card.className="card";
+
+  const title=document.createElement("strong");
+  title.textContent=r.type+"｜"+r.name;
+
+  const energy=document.createElement("p");
+  energy.className="energy";
+  energy.textContent="約 "+Math.round(r.kcal)+" kcal";
+
+  const ing=document.createElement("p");
+  ing.textContent="材料の目安："+r.ingredients
+   .map(x=>x.name+" "+x.g+"g").join("・");
+
+  const how=document.createElement("p");
+  how.textContent="作り方："+r.steps;
+
+  const btn=document.createElement("button");
+  btn.className="small";
+  btn.textContent="🔄 この料理だけ変更";
+
+  btn.onclick=()=>{
+   const next=choose(
+    r.type,
+    candidates().filter(x=>x.id!==r.id),
+    menu.filter((_,j)=>j!==i)
+   );
+
+   if(!next){
+    $("status").textContent="代わりの料理候補がありません。";
+    return;
+   }
+
+   menu[i]=next;
+   $("status").textContent="✨ 料理を変更しました！";
+   renderMenu();
+   record();
+  };
+
+  card.append(title,energy,ing,how,btn);
+  root.append(card);
+ });
+}
+
+$("generate").onclick=()=>{
+ const options=candidates();
+ menu=[];
+
+ const style=$("effort").value;
+ const types=style==="easy"
+  ?["主食","たんぱく質"]
+  :style==="many"
+   ?["主食","たんぱく質","副菜","果物"]
+   :["主食","たんぱく質","副菜"];
+
+ for(const type of types){
+  const r=choose(type,options,menu);
+  if(r)menu.push(r);
+ }
+
+ if(!menu.length){
+  $("status").textContent=
+   "献立を作れる食材がありません。食べたことのある食材を選んでください。";
+  $("result").replaceChildren();
+  return;
+ }
+
+ $("status").textContent="✨ 今日の献立ができました！";
+ renderMenu();
+ record();
+};
+
+$("clear").onclick=()=>{
+ if(confirm("献立履歴を削除しますか？")){
+  history=[];
+  save("history",history);
+  renderHistory();
+ }
+};
+
+renderFoods();
+renderHistory();
+</script>
+</body>
+</html>
