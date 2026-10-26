@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>もぐもぐ献立 Ver.4</title>
+
+<style>
+:root{
+  font-family:-apple-system,BlinkMacSystemFont,
+  "Hiragino Kaku Gothic ProN",sans-serif;
+  color:#35433a;
+  background:#fffaf4;
+}
+*{box-sizing:border-box}
+body{margin:0}
+header{
+  background:#fff0d8;
+  padding:24px 16px;
+  text-align:center;
+}
+h1{margin:0;font-size:27px}
+header p{margin:7px 0 0;font-size:13px}
+main{max-width:750px;margin:auto;padding:16px}
+section,.card{
+  background:white;
+  border:1px solid #f1e4d2;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:0 2px 8px #00000008;
+}
+h2{font-size:18px;margin:0 0 12px}
+label{display:block;margin:10px 0 5px;font-weight:bold}
+select,button{font:inherit}
+select{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #d4c7b4;
+  background:white;
+}
+.hint{font-size:12px;color:#666;line-height:1.6}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(115px,1fr));
+  gap:8px;
+}
+.food{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  background:#f8f8f3;
+  padding:9px 7px;
+  border-radius:9px;
+  margin:0;
+  font-weight:normal;
+}
+.food input{width:17px;height:17px;flex-shrink:0}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.btn{
+  border:0;
+  border-radius:10px;
+  background:#e68b53;
+  color:white;
+  padding:11px 15px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.btn.secondary{background:#718d76}
+.btn.light{background:#eee9df;color:#39433a}
+.btn:disabled{opacity:.5}
+.pill{
+  display:inline-block;
+  background:#fff0d8;
+  color:#78532f;
+  border-radius:20px;
+  padding:4px 10px;
+  font-size:12px;
+  margin:3px 4px 5px 0;
+}
+.card h3{margin:5px 0 8px;font-size:18px}
+.card p{line-height:1.7}
+.meta{font-size:12px;color:#777}
+.card ul{padding-left:22px;line-height:1.7}
+details{margin-top:8px}
+summary{cursor:pointer;font-weight:bold}
+.notice{
+  background:#fff4df;
+  border-left:4px solid #e6a54d;
+  padding:12px;
+  border-radius:6px;
+  font-size:13px;
+  line-height:1.7;
+}
+#historyList{padding-left:20px;line-height:1.8}
+small{font-size:11px}
+</style>
+
+<script src="recipes.js"></script>
+</head>
+
+<body>
+
+<header>
+  <h1>🥣 もぐもぐ献立</h1>
+  <p>Ver.4｜300品のレシピから献立を提案</p>
+</header>
+
+<main>
+
+<section>
+  <h2>👶 お子さんの月齢</h2>
+  <select id="age">
+    <option value="5">5〜6か月</option>
+    <option value="7">7〜8か月</option>
+    <option value="9">9〜11か月</option>
+    <option value="12">12〜18か月</option>
+  </select>
+  <p class="hint">
+    月齢に合うレシピを候補にします。
+    実際の食べやすさは発達に合わせて調整してください。
+  </p>
+</section>
+
+<section>
+  <h2>🥕 食材の設定</h2>
+  <p class="hint">
+    「食べたことがある」食材だけを使います。
+    初期状態ではすべて未確認です。
+    料理に使う食材をチェックしてください。
+  </p>
+
+  <div class="actions">
+    <button class="btn light" id="checkAll">
+      すべて食べたことがある
+    </button>
+    <button class="btn light" id="clearAll">
+      すべて外す
+    </button>
+  </div>
+
+  <div id="foodGrid" class="grid"></div>
+
+  <h2 style="margin-top:20px">🚫 今回使わない食材</h2>
+  <p class="hint">
+    アレルギー・好みなどで除外したい食材を選択します。
+    除外設定が優先されます。
+  </p>
+  <div id="excludeGrid" class="grid"></div>
+</section>
+
+<section>
+  <h2>🍽️ 献立を作る</h2>
+
+  <label for="count">1回に提案する料理数</label>
+  <select id="count">
+    <option value="2">2品</option>
+    <option value="3" selected>3品</option>
+    <option value="4">4品</option>
+  </select>
+
+  <div class="actions">
+    <button class="btn" id="generate">
+      ✨ 献立を提案する
+    </button>
+    <button class="btn light" id="reset">
+      設定を初期化
+    </button>
+  </div>
+
+  <p id="status" class="hint"></p>
+</section>
+
+<div id="results"></div>
+
+<section>
+  <h2>🕘 献立履歴</h2>
+  <div class="actions">
+    <button class="btn light" id="clearHistory">
+      履歴を消去
+    </button>
+  </div>
+  <div id="historyList" class="hint">
+    まだ履歴はありません。
+  </div>
+</section>
+
+<div class="notice">
+  <strong>安全に関するご注意</strong><br>
+  このアプリのレシピと分量は試作段階で、
+  栄養量や安全性の専門的検証は未実施です。
+  月齢だけで食べられると判断せず、
+  発達に合わせて形状・硬さを調整してください。
+  肉・魚・卵は十分に加熱し、
+  魚の骨や窒息につながる形状に注意してください。
+  初めての食材は献立に自動追加せず、
+  医師等の指導や公的ガイドを参考に進めてください。
+</div>
+
+</main>
+
+<script>
+"use strict";
+
+(() => {
+
+const recipes = Array.isArray(window.MOGU_RECIPES)
+  ? window.MOGU_RECIPES
+  : [];
+
+const $ = id => document.getElementById(id);
+
+const KEY = "mogumogu_v4_settings";
+const HKEY = "mogumogu_v4_history";
+
+const normalize = s => String(s || "").trim();
+
+const foodNames = [
+  ...new Set(
+    recipes.flatMap(r =>
+      Array.isArray(r.ingredients)
+        ? r.ingredients.map(x => normalize(x[0]))
+        : []
+    )
+  )
+].filter(Boolean).sort((a,b) => a.localeCompare(b,"ja"));
+
+let saved = {};
+
+try {
+  saved = JSON.parse(localStorage.getItem(KEY) || "{}") || {};
+} catch(e) {}
+
+let eaten = new Set(
+  Array.isArray(saved.eaten) ? saved.eaten : []
+);
+
+let excluded = new Set(
+  Array.isArray(saved.excluded) ? saved.excluded : []
+);
+
+if(saved.age) $("age").value = String(saved.age);
+if(saved.count) $("count").value = String(saved.count);
+
+const escapeHtml = s => String(s).replace(
+  /[&<>"']/g,
+  c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c])
+);
+
+function store(){
+  try {
+    localStorage.setItem(KEY,JSON.stringify({
+      eaten:[...eaten],
+      excluded:[...excluded],
+      age:$("age").value,
+      count:$("count").value
+    }));
+  } catch(e) {}
+}
+
+function renderFoods(){
+
+  for(const [target,values,group] of [
+    ["foodGrid",eaten,"eaten"],
+    ["excludeGrid",excluded,"excluded"]
+  ]){
+
+    $(target).innerHTML = foodNames.map(f => `
+      <label class="food">
+        <input
+          type="checkbox"
+          data-group="${group}"
+          data-food="${escapeHtml(f)}"
+          ${values.has(f) ? "checked" : ""}
+        >
+        <span>${escapeHtml(f)}</span>
+      </label>
+    `).join("");
+
+  }
+}
+
+function valid(r){
+
+  return Number(r.minAge) <= Number($("age").value)
+    && Array.isArray(r.ingredients)
+    && r.ingredients.length > 0
+    && r.ingredients.every(([name]) =>
+      eaten.has(normalize(name))
+      && !excluded.has(normalize(name))
+    );
+
+}
+
+function shuffle(a){
+
+  const b = [...a];
+
+  for(let i=b.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [b[i],b[j]] = [b[j],b[i]];
+  }
+
+  return b;
+}
+
+let selected = [];
+
+function selectMenu(){
+
+  const candidates = shuffle(recipes.filter(valid));
+  const n = Number($("count").value);
+
+  if(!candidates.length){
+
+    selected = [];
+    renderResults();
+
+    $("status").textContent =
+      "条件に合う料理がありません。食べたことのある食材を増やすか、除外設定を確認してください。";
+
+    return;
+  }
+
+  const types = ["主食","主菜","副菜","果物"];
+  const chosen = [];
+
+  for(const type of types){
+
+    if(chosen.length >= n) break;
+
+    const found = candidates.find(r =>
+      r.type === type && !chosen.includes(r)
+    );
+
+    if(found) chosen.push(found);
+  }
+
+  for(const r of candidates){
+
+    if(chosen.length >= n) break;
+
+    if(!chosen.includes(r)) chosen.push(r);
+  }
+
+  selected = chosen;
+
+  renderResults();
+
+  $("status").textContent =
+    `候補 ${candidates.length}品から ${selected.length}品を提案しました。`;
+
+  saveHistory();
+}
+
+function reroll(i){
+
+  const pool = shuffle(
+    recipes.filter(valid).filter(r =>
+      !selected.some((s,j) =>
+        j !== i && s.id === r.id
+      )
+    )
+  );
+
+  const same = pool.find(r =>
+    r.type === selected[i].type
+    && r.id !== selected[i].id
+  );
+
+  const other = pool.find(r =>
+    r.id !== selected[i].id
+  );
+
+  if(!same && !other){
+    alert("交換できる別の料理がありません。");
+    return;
+  }
+
+  selected[i] = same || other;
+
+  renderResults();
+  saveHistory();
+}
+
+function renderResults(){
+
+  if(!selected.length){
+    $("results").innerHTML = "";
+    return;
+  }
+
+  $("results").innerHTML = `
+    <section>
+      <h2>🍴 今日の献立</h2>
+      <p class="hint">
+        各料理の「別の料理にする」で1品ずつ変更できます。
+      </p>
+    </section>
+  ` + selected.map((r,i) => `
+    <article class="card">
+
+      <span class="pill">
+        ${escapeHtml(r.type || "料理")}
+      </span>
+
+      <span class="pill">
+        ${Number(r.minAge)}か月〜
+      </span>
+
+      <h3>${escapeHtml(r.name)}</h3>
+
+      <div class="meta">
+        ⏱ 目安 ${Number(r.time) || "-"}分
+        ｜ レシピID ${escapeHtml(r.id)}
+      </div>
+
+      <details open>
+        <summary>材料と作り方</summary>
+
+        <strong>材料（試作目安）</strong>
+
+        <ul>
+          ${r.ingredients.map(([f,g]) => `
+            <li>${escapeHtml(f)}：${escapeHtml(g)}g</li>
+          `).join("")}
+        </ul>
+
+        <strong>作り方</strong>
+
+        <p>${escapeHtml(r.steps || "作り方は準備中です。")}</p>
+      </details>
+
+      <button
+        class="btn secondary"
+        data-reroll="${i}"
+      >
+        🔄 別の料理にする
+      </button>
+
+    </article>
+  `).join("");
+
+}
+
+function history(){
+
+  try {
+    return JSON.parse(
+      localStorage.getItem(HKEY) || "[]"
+    ) || [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function saveHistory(){
+
+  if(!selected.length) return;
+
+  const h = history();
+
+  h.unshift({
+    date:new Date().toLocaleString("ja-JP"),
+    names:selected.map(r => r.name)
+  });
+
+  try {
+    localStorage.setItem(
+      HKEY,
+      JSON.stringify(h.slice(0,20))
+    );
+  } catch(e) {}
+
+  renderHistory();
+}
+
+function renderHistory(){
+
+  const h = history();
+
+  $("historyList").innerHTML = h.length
+    ? `<ol>${h.map(x => `
+        <li>
+          <small>${escapeHtml(x.date)}</small><br>
+          ${(x.names || []).map(escapeHtml).join(" ／ ")}
+        </li>
+      `).join("")}</ol>`
+    : "まだ履歴はありません.";
+
+}
+
+document.addEventListener("change",e => {
+
+  if(e.target.matches("input[data-food]")){
+
+    const f = e.target.dataset.food;
+
+    const s = e.target.dataset.group === "eaten"
+      ? eaten
+      : excluded;
+
+    e.target.checked ? s.add(f) : s.delete(f);
+
+    store();
+
+  } else if(
+    e.target.id === "age"
+    || e.target.id === "count"
+  ){
+    store();
+  }
+
+});
+
+document.addEventListener("click",e => {
+
+  if(e.target.matches("[data-reroll]")){
+    reroll(Number(e.target.dataset.reroll));
+  }
+
+});
+
+$("checkAll").onclick = () => {
+  eaten = new Set(foodNames);
+  renderFoods();
+  store();
+};
+
+$("clearAll").onclick = () => {
+  eaten.clear();
+  renderFoods();
+  store();
+};
+
+$("generate").onclick = selectMenu;
+
+$("reset").onclick = () => {
+
+  if(!confirm("食材と月齢の設定を初期化しますか？")){
+    return;
+  }
+
+  eaten.clear();
+  excluded.clear();
+
+  $("age").value = "5";
+  $("count").value = "3";
+
+  selected = [];
+
+  renderFoods();
+  renderResults();
+  store();
+
+  $("status").textContent = "設定を初期化しました。";
+};
+
+$("clearHistory").onclick = () => {
+
+  if(!confirm("献立履歴を消去しますか？")){
+    return;
+  }
+
+  localStorage.removeItem(HKEY);
+  renderHistory();
+};
+
+renderFoods();
+renderHistory();
+
+$("status").textContent = recipes.length
+  ? `レシピ ${recipes.length}品を読み込みました。食材を選んで献立を作ってください。`
+  : "レシピを読み込めませんでした。recipes.js が test4.html と同じ場所にあるか確認してください。";
+
+})();
+</script>
+
+</body>
+</html>
