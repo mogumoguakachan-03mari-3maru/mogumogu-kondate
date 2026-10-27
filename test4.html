@@ -1,1110 +1,1503 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>もぐもぐ献立 Ver.4</title>
+<title>もぐもぐ献立 Ver.5</title>
+<script src="recipes.js"></script>
 
 <style>
 :root{
-  font-family:-apple-system,BlinkMacSystemFont,
-  "Hiragino Kaku Gothic ProN",sans-serif;
-  color:#35443b;
-  background:#fffaf4;
+  --main:#e78b57;
+  --green:#648a70;
+  --bg:#fff9f2;
+  --text:#37463d;
 }
 *{box-sizing:border-box}
-body{margin:0}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,
+  "Hiragino Kaku Gothic ProN",sans-serif;
+}
 header{
+  background:#ffefd9;
   text-align:center;
-  background:#fff0d8;
-  padding:23px 12px;
+  padding:24px 12px;
 }
-h1{margin:0;font-size:27px}
+h1{font-size:27px;margin:0 0 8px}
 header p{font-size:13px}
-#recipeCount{
-  display:inline-block;
-  background:white;
-  border-radius:22px;
-  padding:9px 15px;
-  font-size:14px;
-  font-weight:bold;
-}
-main{max-width:780px;margin:auto;padding:15px}
+main{max-width:800px;margin:auto;padding:14px}
 section,.card{
   background:white;
-  border:1px solid #eee1d1;
-  border-radius:15px;
+  border:1px solid #eadfce;
+  border-radius:17px;
   padding:17px;
-  margin-bottom:16px;
+  margin-bottom:15px;
 }
-h2{font-size:19px;margin:0 0 12px}
-h3{margin:8px 0}
+h2{font-size:19px;margin:0 0 14px}
+h3{margin:10px 0}
 p{line-height:1.7}
-.hint{font-size:12px;color:#68756c}
+.small{font-size:12px;color:#6d756f;line-height:1.7}
 select,input[type=search]{
   width:100%;
-  padding:12px;
-  border:1px solid #d6cbbd;
-  border-radius:10px;
+  min-height:48px;
+  padding:10px;
+  border:1px solid #d7cbbd;
+  border-radius:11px;
   background:white;
   font-size:16px;
 }
 button{
-  border:0;
-  border-radius:10px;
+  min-height:46px;
   padding:11px 14px;
+  border:0;
+  border-radius:11px;
   font-size:14px;
   font-weight:bold;
   cursor:pointer;
 }
-.primary{background:#e89158;color:white}
-.green{background:#78977c;color:white}
-.light{background:#f0ede6;color:#455247}
-.actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin:12px 0;
-}
-.badges{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-  margin:12px 0;
-}
-.badge,.tag{
+button:disabled{opacity:.4}
+.primary{background:var(--main);color:white}
+.green{background:var(--green);color:white}
+.gray{background:#f0ede7;color:#405047}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row button{flex:1}
+.badge{
   display:inline-block;
-  border-radius:18px;
-  background:#eef5ed;
-  color:#52725a;
   padding:6px 10px;
+  margin:3px;
+  border-radius:20px;
+  background:#edf4eb;
   font-size:12px;
 }
-.tag{background:#fff0dc;color:#79572e}
+.difficulty{
+  display:inline-block;
+  border-radius:20px;
+  padding:7px 12px;
+  font-size:13px;
+  font-weight:bold;
+}
+.easy{background:#e1f4e5;color:#267a43}
+.normal{background:#fff3ca;color:#927000}
+.medium{background:#ffe5cf;color:#a65b22}
+.hard{background:#f9dbdc;color:#a93d47}
 .category{
-  border:1px solid #e5e8df;
+  margin:10px 0;
+  border:1px solid #e2e7de;
   border-radius:12px;
   overflow:hidden;
-  margin:10px 0;
 }
-.category>summary{
-  background:#f2f7ef;
+.category summary{
   padding:14px;
+  background:#f0f6ed;
   font-weight:bold;
   cursor:pointer;
-  list-style:none;
 }
-.category>summary::-webkit-details-marker{display:none}
-.category>summary:after{content:" ＋";float:right}
-.category[open]>summary:after{content:" −"}
-.food-head,.food-row{
+.food{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 55px 55px;
+  grid-template-columns:minmax(0,1fr) 52px 52px;
   align-items:center;
-  gap:5px;
-  padding:9px 12px;
-}
-.food-head{
-  font-size:11px;
-  color:#666;
-  background:#faf9f5;
-  text-align:center;
-}
-.food-head span:first-child{text-align:left}
-.food-row{
-  border-top:1px solid #f0f0ec;
+  gap:6px;
+  padding:9px;
+  border-top:1px solid #eee;
   font-size:14px;
 }
-.food-row:nth-child(2n){background:#fdfcf9}
-.food-row label{
-  display:flex;
-  justify-content:center;
-  min-height:28px;
-  align-items:center;
-}
-.food-row input{
-  width:21px;
-  height:21px;
-  accent-color:#78977c;
-}
-.food-row input[data-kind=excluded]{accent-color:#cf7165}
-.food-row.excluded{background:#fff2f0}
-.count{
+.food label{text-align:center}
+.food input{width:21px;height:21px}
+.foodhead{
+  background:#faf8f3;
   font-size:11px;
-  color:#67756b;
-  font-weight:normal;
+  color:#777;
 }
-.card ul{line-height:1.8;padding-left:22px}
-.card details{margin:14px 0}
-.card summary{font-weight:bold;cursor:pointer}
+.card{border-left:5px solid #e9ad78}
+.card details{margin:12px 0}
+.card summary{cursor:pointer;font-weight:bold}
+.ingredients{
+  padding-left:22px;
+  line-height:2;
+}
 .step{
-  border:1px solid #f0e3d0;
-  background:#fffaf3;
+  background:#fff9f0;
+  border:1px solid #f1dfc6;
+  padding:13px;
   border-radius:12px;
-  padding:12px;
-  margin:9px 0;
+  margin:10px 0;
 }
 .step strong{
   display:block;
-  color:#b86532;
-  margin-bottom:5px;
+  color:#b76735;
+  margin-bottom:7px;
 }
-.step div{
-  line-height:1.7;
-  white-space:pre-wrap;
+.step p{margin:5px 0;white-space:pre-wrap}
+.step label{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:13px;
 }
-.meta{font-size:12px;color:#777}
+.step input{width:20px;height:20px}
 .notice{
-  background:#fff5e2;
-  border-left:4px solid #e6a54d;
-  border-radius:8px;
+  background:#fff4df;
   padding:13px;
+  border-radius:11px;
   font-size:12px;
   line-height:1.8;
 }
-.empty{
+#cookMode{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:100;
+  background:#fffaf3;
+  overflow:auto;
+}
+#cookMode.active{display:block}
+.cookHeader{
+  background:#ffe8ce;
+  padding:16px;
+  position:sticky;
+  top:0;
+  z-index:2;
+}
+.cookBody{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+.cookStep{
+  background:white;
+  border:2px solid #eacb9f;
+  border-radius:18px;
+  padding:23px;
+  margin:20px 0;
+  font-size:20px;
+  line-height:1.9;
+  white-space:pre-wrap;
+}
+.cookFooter{
+  display:flex;
+  gap:10px;
+  position:sticky;
+  bottom:0;
+  background:#fffaf3;
   padding:12px;
-  background:#fff8e9;
-  border-radius:9px;
-  font-size:13px;
 }
-.status{font-size:13px;color:#54725b}
-#historyList li{
-  margin-bottom:10px;
-  font-size:13px;
-  line-height:1.7;
-}
-@media(max-width:380px){
-  .food-head,.food-row{
-    grid-template-columns:minmax(0,1fr) 47px 47px;
-    padding-left:8px;
-    padding-right:8px;
-  }
-}
+.cookFooter button{flex:1;min-height:56px}
+.empty{padding:14px;background:#fff5e8;border-radius:10px}
 </style>
-
-<script src="recipes.js"></script>
 </head>
 
 <body>
 
 <header>
   <h1>🥣 もぐもぐ献立</h1>
-  <p>月齢に合わせて、今日の献立を考えよう</p>
-  <div id="recipeCount">レシピを確認中…</div>
+  <p>赤ちゃんのための献立サポート</p>
+  <span class="badge" id="recipeCount">読み込み中</span>
 </header>
 
 <main>
 
 <section>
-  <h2>👶 お子さんの月齢</h2>
-
+  <h2>👶 月齢を選ぶ</h2>
   <select id="age">
-    <option value="5">5〜6か月（初期）</option>
-    <option value="7">7〜8か月（中期）</option>
-    <option value="9">9〜11か月（後期）</option>
-    <option value="12">12〜18か月（完了期）</option>
+    <option value="5">5〜6か月</option>
+    <option value="7">7〜8か月</option>
+    <option value="9">9〜11か月</option>
+    <option value="12">12〜18か月</option>
   </select>
-
-  <p class="hint">
-    月齢によって食材一覧と献立候補が変わります。
-    表示時期はアプリ独自の整理目安で、
-    食材の医学的な導入時期を示すものではありません。
+  <p class="small">
+    月齢に応じて食材とレシピ候補を切り替えます。
+    食材の表示区分はアプリ独自の目安です。
   </p>
 </section>
 
 <section>
   <h2>🥕 食材の登録</h2>
-
-  <p class="hint">
-    カテゴリを開いて「食べた」「除外」を選んでください。
-    月齢を変えても登録内容は消えません。
-    除外が優先されます。
+  <p class="small">
+    食べたことがある食材にチェックを付けてください。
+    「除外」はアレルギーや家庭の事情で使わない食材です。
   </p>
 
-  <div class="badges">
-    <span class="badge" id="eatenCount"></span>
-    <span class="badge" id="excludedCount"></span>
-    <span class="badge" id="visibleCount"></span>
-  </div>
+  <div id="foodStats"></div>
 
-  <input
-    type="search"
-    id="foodSearch"
-    placeholder="🔎 表示中の食材を検索"
-  >
+  <input type="search" id="foodSearch"
+    placeholder="食材を検索">
 
-  <div class="actions">
-    <button class="light" id="checkVisible">
-      表示中の食材をすべて「食べた」にする
+  <div class="row" style="margin-top:10px">
+    <button class="gray" id="allEaten">
+      表示中をすべてチェック
     </button>
-
-    <button class="light" id="clearEaten">
-      食べたチェックを外す
+    <button class="gray" id="clearEaten">
+      食べたチェックを解除
     </button>
   </div>
 
-  <p class="hint">
+  <p class="small">
     ※一括チェックは動作確認用です。
-    実際には食べたことがある食材だけを登録してください。
+    実際に食べた食材だけ登録してください。
   </p>
 
-  <div id="foodCategories"></div>
+  <div id="foodList"></div>
 </section>
 
 <section>
-  <h2>🍽️ 献立を作る</h2>
+  <h2>🍽️ 献立の条件</h2>
 
-  <label for="count">提案する料理数</label>
-
+  <p>料理数</p>
   <select id="count">
     <option value="2">2品</option>
     <option value="3" selected>3品</option>
     <option value="4">4品</option>
   </select>
 
-  <div class="actions">
-    <button class="primary" id="generate">
-      ✨ 献立を提案する
-    </button>
+  <p>⏱️ 完成までの時間</p>
+  <select id="timeFilter">
+    <option value="9999">時間制限なし</option>
+    <option value="10">10分以内</option>
+    <option value="20">20分以内</option>
+    <option value="35">35分以内</option>
+  </select>
 
-    <button class="light" id="reset">
+  <p>❤️ お気に入り</p>
+  <select id="favoriteFilter">
+    <option value="all">すべてのレシピ</option>
+    <option value="only">お気に入りのみ</option>
+  </select>
+
+  <div class="row" style="margin-top:15px">
+    <button class="primary" id="generate">
+      ✨ 献立を作る
+    </button>
+    <button class="gray" id="reset">
       設定を初期化
     </button>
   </div>
 
-  <p class="status" id="status"></p>
+  <p id="status" class="small"></p>
 </section>
 
 <div id="results"></div>
 
 <section>
-  <h2>🕘 献立履歴</h2>
+  <h2>🛒 材料のまとめ</h2>
+  <p class="small">
+    献立に必要な材料を合算します。
+    単位が異なるものは別々に表示します。
+  </p>
+  <div id="shopping">
+    <p class="small">献立を作ると表示されます。</p>
+  </div>
+</section>
 
-  <button class="light" id="clearHistory">
+<section>
+  <h2>❤️ お気に入り</h2>
+  <div id="favoritesList"></div>
+</section>
+
+<section>
+  <h2>🕘 献立履歴</h2>
+  <button class="gray" id="clearHistory">
     履歴を消去
   </button>
-
-  <div id="historyList"></div>
+  <div id="history"></div>
 </section>
 
 <div class="notice">
   <strong>⚠️ 安全上の注意</strong><br>
-  本アプリの300品は試作レシピで、月齢・分量・調理方法の
-  専門的な検証は未完了です。
-  食材の開始時期は個人差があり、卵などの導入を
-  自己判断で不必要に遅らせないでください。
-  食物アレルギーの確認は食材名の文字列照合だけでは不十分です。
-  加工品の原材料も確認し、初めての食材や既知のアレルギーは
-  医師等の助言に従ってください。
-  肉・魚・卵は十分加熱し、骨・窒息につながる大きさや硬さに
-  注意してください。1歳未満には蜂蜜を与えないでください。
+  このアプリのレシピは試作データです。
+  分量・加熱時間・調理形態の検証が完了していない料理もあります。
+  水量や加熱時間が未登録の場合、推測で補いません。
+  肉・魚・卵は十分加熱し、骨や窒息につながる形状に注意してください。
+  1歳未満には蜂蜜を与えないでください。
+  食物アレルギーについては医師等の指示を優先してください。
 </div>
 
 </main>
 
+<div id="cookMode">
+  <div class="cookHeader">
+    <div class="row">
+      <button class="gray" id="closeCook">✕ 閉じる</button>
+      <span class="badge" id="cookProgress"></span>
+    </div>
+    <h2 id="cookTitle"></h2>
+  </div>
+
+  <div class="cookBody">
+    <div id="cookIngredients"></div>
+    <div class="cookStep" id="cookStep"></div>
+
+    <label style="display:flex;align-items:center;gap:10px">
+      <input type="checkbox" id="cookDone"
+        style="width:24px;height:24px">
+      この工程が終わった
+    </label>
+
+    <p class="small" id="wakeStatus"></p>
+  </div>
+
+  <div class="cookFooter">
+    <button class="gray" id="prevStep">← 前へ</button>
+    <button class="green" id="nextStep">次へ →</button>
+  </div>
+</div>
+
 <script>
 (() => {
-  "use strict";
+"use strict";
 
-  const recipes = Array.isArray(window.MOGU_RECIPES)
-    ? window.MOGU_RECIPES
-    : [];
+const $ = id => document.getElementById(id);
 
-  const $ = id => document.getElementById(id);
+const recipes = Array.isArray(window.MOGU_RECIPES)
+  ? window.MOGU_RECIPES : [];
 
-  const KEY = "mogumogu_v4_settings";
-  const HKEY = "mogumogu_v4_history";
+const KEY = "mogumogu_v5_settings";
+const FAVORITE_KEY = "mogumogu_v5_favorites";
+const HISTORY_KEY = "mogumogu_v4_history";
 
-  const norm = v => String(v ?? "").trim();
+const text = value => String(value ?? "").trim();
 
-  const esc = v => norm(v).replace(
-    /[&<>"']/g,
-    c => ({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#39;"
-    }[c])
-  );
+const escapeHTML = value => text(value).replace(
+  /[&<>"']/g,
+  c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c])
+);
 
-  /* 全食材 */
+function load(key,fallback){
+  try{
+    const value = JSON.parse(localStorage.getItem(key));
+    return value ?? fallback;
+  }catch{
+    return fallback;
+  }
+}
 
-  const allFoods = [
-    ...new Set(
-      recipes.flatMap(r =>
-        Array.isArray(r.ingredients)
-          ? r.ingredients.map(i => norm(i[0]))
-          : []
-      )
-    )
-  ].filter(Boolean);
+function save(key,value){
+  try{
+    localStorage.setItem(key,JSON.stringify(value));
+  }catch{}
+}
 
-  /* 食材カテゴリ */
+/* ===== 既存設定の引き継ぎ ===== */
 
-  const groups = [
-    ["🍚 主食・穀類",[
-      "米がゆ","10倍がゆ","7倍がゆ","5倍がゆ",
-      "軟飯","ごはん","うどん","そうめん",
-      "パスタ","マカロニ","食パン",
-      "オートミール","パン粉","小麦粉","米粉"
-    ]],
+const old = load("mogumogu_v4_settings",{});
+const saved = load(KEY,null) || old;
 
-    ["🥕 野菜・いも類",[
-      "にんじん","かぼちゃ","じゃがいも",
-      "さつまいも","大根","かぶ","キャベツ",
-      "白菜","玉ねぎ","ほうれん草","小松菜",
-      "ブロッコリー","トマト","とうもろこし",
-      "オクラ","れんこん","きゅうり","なす",
-      "ピーマン","レタス","アスパラガス"
-    ]],
+let eaten = new Set(
+  Array.isArray(saved.eaten) ? saved.eaten : []
+);
 
-    ["🍗 肉類",[
-      "鶏ひき肉","鶏むね肉","鶏ささみ",
-      "鶏肉","豚赤身肉","豚ひき肉",
-      "牛赤身肉","牛ひき肉"
-    ]],
+let excluded = new Set(
+  Array.isArray(saved.excluded) ? saved.excluded : []
+);
 
-    ["🐟 魚介類",[
-      "白身魚","たい","たら","かれい",
-      "鮭","まぐろ","かつお","ツナ水煮",
-      "しらす","さば","いわし","あじ","えび"
-    ]],
+let favorites = new Set(
+  load(FAVORITE_KEY,[])
+);
 
-    ["🥚 卵・大豆製品",[
-      "豆腐","絹ごし豆腐","木綿豆腐",
-      "卵黄","卵白","全卵","卵",
-      "納豆","きな粉","豆乳"
-    ]],
+if(["5","7","9","12"].includes(String(saved.age))){
+  $("age").value = String(saved.age);
+}
 
-    ["🥛 乳製品",[
-      "プレーンヨーグルト","ヨーグルト",
-      "チーズ","牛乳","粉ミルク",
-      "育児用ミルク","バター"
-    ]],
+if(["2","3","4"].includes(String(saved.count))){
+  $("count").value = String(saved.count);
+}
 
-    ["🍎 果物",[
-      "りんご","バナナ","いちご","桃",
-      "洋梨","みかん","梨","キウイ",
-      "ぶどう","柿"
-    ]],
+if(saved.timeFilter){
+  $("timeFilter").value = String(saved.timeFilter);
+}
 
-    ["🍄 きのこ・海藻",[
-      "しめじ","しいたけ","えのき",
-      "わかめ","のり"
-    ]],
+if(saved.favoriteFilter){
+  $("favoriteFilter").value = saved.favoriteFilter;
+}
 
-    ["🧂 調味料・その他",[
-      "だし","昆布だし","野菜だし",
-      "かつおだし","しょうゆ","みそ",
-      "砂糖","塩","油","オリーブ油",
-      "ごま油","片栗粉","ごま"
-    ]]
-  ];
+function storeSettings(){
+  save(KEY,{
+    eaten:[...eaten],
+    excluded:[...excluded],
+    age:$("age").value,
+    count:$("count").value,
+    timeFilter:$("timeFilter").value,
+    favoriteFilter:$("favoriteFilter").value
+  });
+}
 
-  /*
-    月齢別の表示目安。
-    公的資料の食材別開始月齢表ではありません。
-  */
+const currentAge = () => Number($("age").value);
 
-  const ageMap = {};
+/* ===== 食材データ ===== */
 
-  const register = (age,names) => {
-    names.forEach(name => {
-      ageMap[name] = age;
-    });
-  };
+const allFoods = [...new Set(
+  recipes.flatMap(recipe =>
+    Array.isArray(recipe.ingredients)
+      ? recipe.ingredients.map(item => text(item[0]))
+      : []
+  )
+)].filter(Boolean);
 
-  register(5,[
+const categories = [
+  ["🍚 主食・穀類",[
     "米がゆ","10倍がゆ","7倍がゆ","5倍がゆ",
+    "軟飯","ごはん","うどん","そうめん",
+    "パスタ","マカロニ","食パン",
+    "オートミール","パン粉","小麦粉","米粉"
+  ]],
+  ["🥕 野菜・いも類",[
     "にんじん","かぼちゃ","じゃがいも",
     "さつまいも","大根","かぶ","キャベツ",
     "白菜","玉ねぎ","ほうれん草","小松菜",
-    "ブロッコリー","豆腐","絹ごし豆腐",
-    "木綿豆腐","白身魚","たい","たら",
-    "かれい","りんご","バナナ",
-    "昆布だし","野菜だし","だし"
-  ]);
-
-  register(7,[
-    "うどん","そうめん","食パン",
-    "オートミール","トマト","とうもろこし",
-    "鶏ひき肉","鶏むね肉","鶏ささみ",
-    "鶏肉","鮭","まぐろ","かつお",
-    "ツナ水煮","しらす","卵黄","卵白",
-    "全卵","卵","納豆","きな粉","豆乳",
-    "プレーンヨーグルト","ヨーグルト",
-    "粉ミルク","育児用ミルク",
-    "桃","いちご","みかん","梨","洋梨",
-    "かつおだし","片栗粉","小麦粉","米粉"
-  ]);
-
-  register(9,[
-    "軟飯","パスタ","マカロニ","パン粉",
-    "オクラ","きゅうり","なす","ピーマン",
-    "レタス","アスパラガス",
+    "ブロッコリー","トマト","とうもろこし",
+    "オクラ","れんこん","きゅうり","なす",
+    "ピーマン","レタス","アスパラガス"
+  ]],
+  ["🍗 肉類",[
+    "鶏ひき肉","鶏むね肉","鶏ささみ","鶏肉",
     "豚赤身肉","豚ひき肉",
-    "牛赤身肉","牛ひき肉",
-    "さば","いわし","あじ","チーズ",
+    "牛赤身肉","牛ひき肉"
+  ]],
+  ["🐟 魚介類",[
+    "白身魚","たい","たら","かれい",
+    "鮭","まぐろ","かつお","ツナ水煮",
+    "しらす","さば","いわし","あじ","えび"
+  ]],
+  ["🥚 卵・大豆製品",[
+    "豆腐","絹ごし豆腐","木綿豆腐",
+    "卵黄","卵白","全卵","卵",
+    "納豆","きな粉","豆乳"
+  ]],
+  ["🥛 乳製品",[
+    "プレーンヨーグルト","ヨーグルト",
+    "チーズ","牛乳","粉ミルク",
+    "育児用ミルク","バター"
+  ]],
+  ["🍎 果物",[
+    "りんご","バナナ","いちご","桃",
+    "洋梨","みかん","梨","キウイ",
+    "ぶどう","柿"
+  ]],
+  ["🍄 きのこ・海藻",[
     "しめじ","しいたけ","えのき",
-    "わかめ","のり","キウイ","柿",
-    "しょうゆ","みそ","砂糖","塩",
-    "油","オリーブ油","ごま油","ごま"
+    "わかめ","のり"
+  ]],
+  ["🧂 調味料・その他",[
+    "だし","昆布だし","野菜だし",
+    "かつおだし","しょうゆ","みそ",
+    "砂糖","塩","油","オリーブ油",
+    "ごま油","片栗粉","ごま"
+  ]]
+];
+
+const stage = {};
+
+function register(age,names){
+  names.forEach(name => stage[name] = age);
+}
+
+register(5,[
+  "米がゆ","10倍がゆ","7倍がゆ","5倍がゆ",
+  "にんじん","かぼちゃ","じゃがいも",
+  "さつまいも","大根","かぶ","キャベツ",
+  "白菜","玉ねぎ","ほうれん草","小松菜",
+  "ブロッコリー","豆腐","絹ごし豆腐",
+  "木綿豆腐","白身魚","たい","たら",
+  "かれい","りんご","バナナ",
+  "昆布だし","野菜だし","だし"
+]);
+
+register(7,[
+  "うどん","そうめん","食パン",
+  "オートミール","トマト","とうもろこし",
+  "鶏ひき肉","鶏むね肉","鶏ささみ",
+  "鶏肉","鮭","まぐろ","かつお",
+  "ツナ水煮","しらす","卵黄","卵白",
+  "全卵","卵","納豆","きな粉","豆乳",
+  "プレーンヨーグルト","ヨーグルト",
+  "粉ミルク","育児用ミルク",
+  "桃","いちご","みかん","梨","洋梨",
+  "かつおだし","片栗粉","小麦粉","米粉"
+]);
+
+register(9,[
+  "軟飯","パスタ","マカロニ","パン粉",
+  "オクラ","きゅうり","なす","ピーマン",
+  "レタス","アスパラガス",
+  "豚赤身肉","豚ひき肉",
+  "牛赤身肉","牛ひき肉",
+  "さば","いわし","あじ","チーズ",
+  "しめじ","しいたけ","えのき",
+  "わかめ","のり","キウイ","柿",
+  "しょうゆ","みそ","砂糖","塩",
+  "油","オリーブ油","ごま油","ごま"
+]);
+
+register(12,[
+  "ごはん","れんこん","牛乳",
+  "バター","ぶどう","えび"
+]);
+
+const foodAge = name => stage[name] ?? 12;
+
+const registered = new Set(
+  categories.flatMap(group => group[1])
+);
+
+const otherFoods = allFoods.filter(
+  food => !registered.has(food)
+);
+
+if(otherFoods.length){
+  categories.push([
+    "📦 その他の食材（要確認）",
+    otherFoods
   ]);
+}
 
-  register(12,[
-    "ごはん","れんこん","牛乳",
-    "バター","ぶどう","えび"
-  ]);
+function visibleFoods(){
+  return allFoods.filter(
+    food => foodAge(food) <= currentAge()
+  );
+}
 
-  const foodAge = food => ageMap[food] ?? 12;
+/* ===== 食材選択 ===== */
 
-  /* 未分類食材 */
+function renderFoods(){
 
-  const categorized = new Set(
-    groups.flatMap(group => group[1])
+  const visible = new Set(visibleFoods());
+
+  const query = text(
+    $("foodSearch").value
+  ).toLowerCase();
+
+  const opened = new Set(
+    [...document.querySelectorAll(
+      ".category[open]"
+    )].map(element => element.dataset.name)
   );
 
-  const unknown = allFoods.filter(
-    food => !categorized.has(food)
-  );
+  const initial = $("foodList").children.length === 0;
 
-  if(unknown.length){
-    groups.push([
-      "📦 その他の食材（要確認）",
-      unknown
-    ]);
-  }
+  $("foodList").innerHTML = categories.map(
+    ([name,items],index) => {
 
-  /* 保存データ */
-
-  let saved = {};
-
-  try{
-    saved = JSON.parse(
-      localStorage.getItem(KEY) || "{}"
-    ) || {};
-  }catch(e){}
-
-  let eaten = new Set(
-    Array.isArray(saved.eaten) ? saved.eaten : []
-  );
-
-  let excluded = new Set(
-    Array.isArray(saved.excluded) ? saved.excluded : []
-  );
-
-  if(["5","7","9","12"].includes(String(saved.age))){
-    $("age").value = String(saved.age);
-  }
-
-  if(["2","3","4"].includes(String(saved.count))){
-    $("count").value = String(saved.count);
-  }
-
-  const age = () => Number($("age").value);
-
-  const visibleFoods = () =>
-    allFoods.filter(food => foodAge(food) <= age());
-
-  function store(){
-    try{
-      localStorage.setItem(KEY,JSON.stringify({
-        eaten:[...eaten],
-        excluded:[...excluded],
-        age:$("age").value,
-        count:$("count").value
-      }));
-    }catch(e){}
-  }
-
-  /* 食材一覧の描画 */
-
-  function renderFoods(){
-
-    const query = norm(
-      $("foodSearch").value
-    ).toLowerCase();
-
-    const visible = new Set(visibleFoods());
-
-    const open = new Set(
-      [...document.querySelectorAll(
-        "details.category[open]"
-      )].map(item => item.dataset.name)
-    );
-
-    const first =
-      $("foodCategories").children.length === 0;
-
-    $("foodCategories").innerHTML = groups.map(
-      ([name,items],idx) => {
-
-        const foods = items.filter(food =>
-          visible.has(food) &&
-          food.toLowerCase().includes(query)
-        );
-
-        if(!foods.length) return "";
-
-        const n = foods.filter(
-          food => eaten.has(food)
-        ).length;
-
-        const shouldOpen =
-          query ||
-          open.has(name) ||
-          (first && idx === 0);
-
-        return `
-          <details
-            class="category"
-            data-name="${esc(name)}"
-            ${shouldOpen ? "open" : ""}
-          >
-            <summary>
-              ${esc(name)}
-              <span class="count">
-                ${n}/${foods.length}品目
-              </span>
-            </summary>
-
-            <div class="food-head">
-              <span>食材</span>
-              <span>食べた</span>
-              <span>除外</span>
-            </div>
-
-            ${foods.map(food => `
-              <div class="food-row
-                ${excluded.has(food) ? "excluded" : ""}
-              ">
-                <span>${esc(food)}</span>
-
-                <label aria-label="${esc(food)}を食べた">
-                  <input
-                    type="checkbox"
-                    data-kind="eaten"
-                    data-food="${esc(food)}"
-                    ${eaten.has(food) ? "checked" : ""}
-                  >
-                </label>
-
-                <label aria-label="${esc(food)}を除外">
-                  <input
-                    type="checkbox"
-                    data-kind="excluded"
-                    data-food="${esc(food)}"
-                    ${excluded.has(food) ? "checked" : ""}
-                  >
-                </label>
-              </div>
-            `).join("")}
-          </details>
-        `;
-      }
-    ).join("") || `
-      <p class="empty">
-        この月齢・検索条件で表示する食材はありません。
-      </p>
-    `;
-
-    $("eatenCount").textContent =
-      `食べた：${allFoods.filter(f => eaten.has(f)).length}品目`;
-
-    $("excludedCount").textContent =
-      `除外：${allFoods.filter(f => excluded.has(f)).length}品目`;
-
-    $("visibleCount").textContent =
-      `現在の月齢：${visible.size}品目`;
-  }
-
-  /* 献立候補の判定 */
-
-  function valid(recipe){
-
-    if(Number(recipe.minAge) > age()){
-      return false;
-    }
-
-    if(
-      !Array.isArray(recipe.ingredients) ||
-      recipe.ingredients.length === 0
-    ){
-      return false;
-    }
-
-    return recipe.ingredients.every(item => {
-      const food = norm(item[0]);
-
-      return (
-        foodAge(food) <= age() &&
-        eaten.has(food) &&
-        !excluded.has(food)
-      );
-    });
-  }
-
-  function shuffle(items){
-
-    const result = [...items];
-
-    for(let i=result.length-1;i>0;i--){
-
-      const j = Math.floor(
-        Math.random() * (i+1)
+      const foods = items.filter(food =>
+        visible.has(food) &&
+        food.toLowerCase().includes(query)
       );
 
-      [result[i],result[j]] = [
-        result[j],result[i]
-      ];
-    }
+      if(!foods.length) return "";
 
-    return result;
-  }
+      const checked = foods.filter(
+        food => eaten.has(food)
+      ).length;
 
-  let selected = [];
-
-  /* 献立作成 */
-
-  function makeMenu(){
-
-    const candidates = shuffle(
-      recipes.filter(valid)
-    );
-
-    const count = Number(
-      $("count").value
-    );
-
-    if(!candidates.length){
-
-      selected = [];
-      renderResults();
-
-      $("status").textContent =
-        "条件に合う料理がありません。月齢と食材のチェックを確認してください。";
-
-      return;
-    }
-
-    const chosen = [];
-
-    for(const type of [
-      "主食","主菜","副菜","果物"
-    ]){
-
-      if(chosen.length >= count) break;
-
-      const recipe = candidates.find(
-        r => r.type === type && !chosen.includes(r)
-      );
-
-      if(recipe){
-        chosen.push(recipe);
-      }
-    }
-
-    for(const recipe of candidates){
-
-      if(chosen.length >= count) break;
-
-      if(!chosen.includes(recipe)){
-        chosen.push(recipe);
-      }
-    }
-
-    selected = chosen;
-
-    renderResults();
-
-    $("status").textContent =
-      `${candidates.length}品の候補から${chosen.length}品を提案しました。`;
-
-    saveHistory();
-  }
-
-  /* 1品だけ変更 */
-
-  function reroll(index){
-
-    const current = selected[index];
-
-    if(!current) return;
-
-    const pool = shuffle(
-      recipes.filter(valid).filter(
-        recipe =>
-          recipe.id !== current.id &&
-          !selected.some(
-            (item,j) =>
-              j !== index &&
-              item.id === recipe.id
-          )
-      )
-    );
-
-    const replacement =
-      pool.find(r => r.type === current.type) ||
-      pool[0];
-
-    if(!replacement){
-
-      alert("変更できる別の料理がありません。");
-      return;
-    }
-
-    selected[index] = replacement;
-
-    renderResults();
-    saveHistory();
-  }
-
-  /* 調理手順を3段階に整理 */
-
-  function threeSteps(recipe){
-
-    if(
-      Array.isArray(recipe.steps3) &&
-      recipe.steps3.length === 3
-    ){
-      return recipe.steps3.map(norm);
-    }
-
-    const text = norm(recipe.steps);
-
-    const pieces = text
-      .split(/(?<=。)/u)
-      .map(s => s.trim())
-      .filter(Boolean);
-
-    if(pieces.length >= 3){
-
-      const a = Math.ceil(pieces.length / 3);
-
-      const b = Math.ceil(
-        (pieces.length-a) / 2
-      );
-
-      return [
-        pieces.slice(0,a).join(""),
-        pieces.slice(a,a+b).join(""),
-        pieces.slice(a+b).join("")
-      ];
-    }
-
-    if(pieces.length === 2){
-
-      return [
-        "材料を用意し、必要に応じて洗って食べやすく切る。",
-        pieces[0],
-        pieces[1]
-      ];
-    }
-
-    if(pieces.length === 1){
-
-      return [
-        "材料を分量どおりに用意する。",
-        pieces[0],
-        "仕上がりの硬さ・大きさ・温度を確認してから提供する。"
-      ];
-    }
-
-    return [
-      "材料を準備する。",
-      "食材に合った方法で十分に加熱する。",
-      "食べやすい硬さと温度に整える。"
-    ];
-  }
-
-  /* 献立表示 */
-
-  function renderResults(){
-
-    if(!selected.length){
-
-      $("results").innerHTML = "";
-      return;
-    }
-
-    $("results").innerHTML = `
-      <section>
-        <h2>🍴 今日の献立</h2>
-        <p class="hint">
-          料理ごとに変更できます。
-          手順は元データを3つの欄に整理した試作表示です。
-          内容を確認して調理してください。
-        </p>
-      </section>
-    ` + selected.map((recipe,index) => {
-
-      const steps = threeSteps(recipe);
+      const isOpen =
+        Boolean(query) ||
+        opened.has(name) ||
+        (initial && index === 0);
 
       return `
-        <article class="card">
+        <details class="category"
+          data-name="${escapeHTML(name)}"
+          ${isOpen ? "open" : ""}>
 
-          <span class="tag">
-            ${esc(recipe.type || "料理")}
-          </span>
+          <summary>
+            ${escapeHTML(name)}
+            <small>（${checked}/${foods.length}）</small>
+          </summary>
 
-          <span class="tag">
-            ${esc(recipe.minAge)}か月〜
-          </span>
-
-          <h3>${esc(recipe.name)}</h3>
-
-          <div class="meta">
-            ⏱ 目安 ${esc(recipe.time)}分
-            ｜ID ${esc(recipe.id)}
+          <div class="food foodhead">
+            <span>食材</span>
+            <span>食べた</span>
+            <span>除外</span>
           </div>
 
-          <details open>
+          ${foods.map(food => `
+            <div class="food">
+              <span>${escapeHTML(food)}</span>
 
-            <summary>📖 材料と作り方</summary>
+              <label>
+                <input type="checkbox"
+                  data-food="${escapeHTML(food)}"
+                  data-kind="eaten"
+                  aria-label="${escapeHTML(food)}を食べた"
+                  ${eaten.has(food) ? "checked" : ""}>
+              </label>
 
-            <h4>材料（試作目安）</h4>
+              <label>
+                <input type="checkbox"
+                  data-food="${escapeHTML(food)}"
+                  data-kind="excluded"
+                  aria-label="${escapeHTML(food)}を除外"
+                  ${excluded.has(food) ? "checked" : ""}>
+              </label>
+            </div>
+          `).join("")}
 
-            <ul>
-              ${recipe.ingredients.map(item => `
-                <li>
-                  ${esc(item[0])}：${esc(item[1])}g
-                </li>
-              `).join("")}
-            </ul>
-
-            <h4>作り方・3ステップ</h4>
-
-            ${steps.map((step,i) => `
-              <div class="step">
-
-                <strong>
-                  STEP ${i+1}｜
-                  ${["準備","調理","仕上げ"][i]}
-                </strong>
-
-                <div>${esc(step)}</div>
-
-              </div>
-            `).join("")}
-
-          </details>
-
-          <button
-            class="green"
-            data-reroll="${index}"
-          >
-            🔄 この料理を変更
-          </button>
-
-        </article>
+        </details>
       `;
-    }).join("");
+    }
+  ).join("") || `<p class="empty">該当する食材がありません。</p>`;
+
+  $("foodStats").innerHTML = `
+    <span class="badge">表示中 ${visible.size}品目</span>
+    <span class="badge">食べた ${eaten.size}品目</span>
+    <span class="badge">除外 ${excluded.size}品目</span>
+  `;
+}
+
+$("foodList").addEventListener("change",event => {
+
+  const input = event.target.closest(
+    "input[data-food]"
+  );
+
+  if(!input) return;
+
+  const set = input.dataset.kind === "eaten"
+    ? eaten : excluded;
+
+  if(input.checked){
+    set.add(input.dataset.food);
+  }else{
+    set.delete(input.dataset.food);
   }
 
-  /* 履歴 */
+  storeSettings();
+  renderFoods();
+});
 
-  function getHistory(){
+$("foodSearch").addEventListener(
+  "input",renderFoods
+);
 
-    try{
+$("allEaten").onclick = () => {
 
-      const result = JSON.parse(
-        localStorage.getItem(HKEY) || "[]"
-      );
+  if(!confirm(
+    "表示中の食材をすべて「食べた」にしますか？"
+  )) return;
 
-      return Array.isArray(result) ? result : [];
+  visibleFoods().forEach(food => eaten.add(food));
 
-    }catch(e){
+  storeSettings();
+  renderFoods();
+};
 
-      return [];
+$("clearEaten").onclick = () => {
+  eaten.clear();
+  storeSettings();
+  renderFoods();
+};
+
+/* ===== 難易度 ===== */
+
+function totalMinutes(recipe){
+
+  const explicit = Number(recipe.totalTime);
+
+  if(
+    recipe.totalTime !== undefined &&
+    recipe.totalTime !== null &&
+    recipe.totalTime !== "" &&
+    Number.isFinite(explicit) &&
+    explicit >= 0
+  ){
+    return explicit;
+  }
+
+  const legacy = Number(recipe.time);
+
+  if(
+    recipe.time !== undefined &&
+    recipe.time !== null &&
+    recipe.time !== "" &&
+    Number.isFinite(legacy) &&
+    legacy >= 0
+  ){
+    return legacy;
+  }
+
+  return null;
+}
+
+function difficulty(recipe){
+
+  const allowed = [
+    "簡単","普通","ちょい手間","時間がかかる"
+  ];
+
+  if(allowed.includes(recipe.difficulty)){
+    return recipe.difficulty;
+  }
+
+  const minutes = totalMinutes(recipe);
+
+  if(minutes === null) return "未分類";
+  if(minutes <= 10) return "簡単";
+  if(minutes <= 20) return "普通";
+  if(minutes <= 35) return "ちょい手間";
+
+  return "時間がかかる";
+}
+
+function difficultyClass(value){
+
+  return ({
+    "簡単":"easy",
+    "普通":"normal",
+    "ちょい手間":"medium",
+    "時間がかかる":"hard"
+  })[value] || "normal";
+}
+
+/* ===== 材料 ===== */
+
+function ingredientsOf(recipe){
+
+  if(!Array.isArray(recipe.ingredients)){
+    return [];
+  }
+
+  return recipe.ingredients.map(item => {
+
+    if(Array.isArray(item)){
+      return {
+        name:text(item[0]),
+        amount:Number(item[1]),
+        unit:text(item[2] || "g")
+      };
+    }
+
+    return {
+      name:text(item.name),
+      amount:Number(item.amount),
+      unit:text(item.unit || "g")
+    };
+  }).filter(item => item.name);
+}
+
+function ingredientText(item){
+
+  if(!Number.isFinite(item.amount)){
+    return `${item.name}：分量未確認`;
+  }
+
+  return `${item.name}：${item.amount}${item.unit}`;
+}
+
+/* ===== 手順 ===== */
+
+function stepsOf(recipe){
+
+  if(
+    Array.isArray(recipe.stepsDetailed) &&
+    recipe.stepsDetailed.length
+  ){
+    return recipe.stepsDetailed.map(step => {
+
+      if(typeof step === "string"){
+        return {
+          title:"調理",
+          description:step,
+          minutes:null
+        };
+      }
+
+      return {
+        title:text(step.title || "調理"),
+        description:text(
+          step.description || step.text
+        ),
+        minutes:step.minutes ?? null
+      };
+    });
+  }
+
+  if(
+    Array.isArray(recipe.steps3) &&
+    recipe.steps3.length
+  ){
+    return recipe.steps3.map((description,index) => ({
+      title:["準備","調理","仕上げ"][index] || "調理",
+      description:text(description),
+      minutes:null
+    }));
+  }
+
+  const original = text(recipe.steps);
+
+  if(original){
+    return [{
+      title:"元のレシピに記載された手順",
+      description:original,
+      minutes:null
+    }];
+  }
+
+  return [{
+    title:"手順未確認",
+    description:"調理手順が登録されていません。",
+    minutes:null
+  }];
+}
+
+function isDetailed(recipe){
+
+  return Array.isArray(recipe.stepsDetailed) &&
+    recipe.stepsDetailed.length > 0;
+}
+
+/* ===== 献立生成 ===== */
+
+let selected = [];
+
+function valid(recipe){
+
+  if(Number(recipe.minAge) > currentAge()){
+    return false;
+  }
+
+  const ingredients = ingredientsOf(recipe);
+
+  if(!ingredients.length) return false;
+
+  if(
+    !ingredients.every(item =>
+      foodAge(item.name) <= currentAge() &&
+      eaten.has(item.name) &&
+      !excluded.has(item.name)
+    )
+  ){
+    return false;
+  }
+
+  const limit = Number($("timeFilter").value);
+  const minutes = totalMinutes(recipe);
+
+  if(limit !== 9999){
+    if(minutes === null || minutes > limit){
+      return false;
     }
   }
 
-  function saveHistory(){
-
-    if(!selected.length) return;
-
-    const history = getHistory();
-
-    history.unshift({
-      date:new Date().toLocaleString("ja-JP"),
-      names:selected.map(recipe => recipe.name)
-    });
-
-    try{
-      localStorage.setItem(
-        HKEY,
-        JSON.stringify(history.slice(0,20))
-      );
-    }catch(e){}
-
-    renderHistory();
+  if(
+    $("favoriteFilter").value === "only" &&
+    !favorites.has(String(recipe.id))
+  ){
+    return false;
   }
 
-  function renderHistory(){
+  return true;
+}
 
-    const history = getHistory();
+function shuffle(items){
 
-    $("historyList").innerHTML = history.length
-      ? `
-        <ol>
-          ${history.map(item => `
-            <li>
-              <small>${esc(item.date)}</small>
-              <br>
-              ${(item.names || []).map(esc).join(" ／ ")}
-            </li>
-          `).join("")}
-        </ol>
-      `
-      : `<p class="hint">まだ履歴はありません。</p>`;
+  const result = [...items];
+
+  for(let i=result.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [result[i],result[j]] = [result[j],result[i]];
   }
 
-  /* 操作イベント */
+  return result;
+}
 
-  $("age").addEventListener("change",() => {
+function recentIDs(){
 
-    store();
-    renderFoods();
+  const history = load(HISTORY_KEY,[]);
+
+  return new Set(
+    history.slice(0,5).flatMap(item =>
+      Array.isArray(item.ids) ? item.ids.map(String) : []
+    )
+  );
+}
+
+function candidates(){
+
+  const recent = recentIDs();
+
+  return shuffle(recipes.filter(valid)).sort(
+    (a,b) =>
+      Number(recent.has(String(a.id))) -
+      Number(recent.has(String(b.id)))
+  );
+}
+
+function generate(){
+
+  const pool = candidates();
+  const count = Number($("count").value);
+
+  if(!pool.length){
 
     selected = [];
     renderResults();
 
     $("status").textContent =
-      "月齢を変更しました。献立を作り直してください。";
-  });
+      "条件に合う料理がありません。食材や時間の設定を確認してください。";
 
-  $("count").addEventListener("change",store);
+    return;
+  }
 
-  $("foodSearch").addEventListener(
-    "input",renderFoods
-  );
+  const chosen = [];
 
-  $("foodCategories").addEventListener(
-    "change",event => {
+  for(const type of ["主食","主菜","副菜","果物"]){
 
-      const input = event.target.closest(
-        "input[data-food]"
-      );
+    if(chosen.length >= count) break;
 
-      if(!input) return;
-
-      const set = input.dataset.kind === "eaten"
-        ? eaten
-        : excluded;
-
-      if(input.checked){
-        set.add(input.dataset.food);
-      }else{
-        set.delete(input.dataset.food);
-      }
-
-      store();
-      renderFoods();
-    }
-  );
-
-  $("checkVisible").onclick = () => {
-
-    if(!confirm(
-      "現在表示される食材をすべて「食べた」にします。動作確認以外では使わないでください。続けますか？"
-    )){
-      return;
-    }
-
-    visibleFoods().forEach(
-      food => eaten.add(food)
+    const found = pool.find(recipe =>
+      recipe.type === type &&
+      !chosen.includes(recipe)
     );
 
-    store();
-    renderFoods();
-  };
-
-  $("clearEaten").onclick = () => {
-
-    eaten.clear();
-
-    store();
-    renderFoods();
-  };
-
-  $("generate").onclick = makeMenu;
-
-  $("results").addEventListener(
-    "click",event => {
-
-      const button = event.target.closest(
-        "[data-reroll]"
-      );
-
-      if(button){
-        reroll(
-          Number(button.dataset.reroll)
-        );
-      }
-    }
-  );
-
-  $("reset").onclick = () => {
-
-    if(!confirm(
-      "月齢と食材設定を初期化しますか？"
-    )){
-      return;
-    }
-
-    eaten.clear();
-    excluded.clear();
-    selected = [];
-
-    $("age").value = "5";
-    $("count").value = "3";
-    $("foodSearch").value = "";
-
-    store();
-    renderFoods();
-    renderResults();
-
-    $("status").textContent =
-      "設定を初期化しました。";
-  };
-
-  $("clearHistory").onclick = () => {
-
-    if(!confirm("履歴を消去しますか？")){
-      return;
-    }
-
-    localStorage.removeItem(HKEY);
-
-    renderHistory();
-  };
-
-  /* 初期表示 */
-
-  $("recipeCount").textContent = recipes.length
-    ? `📚 レシピ ${recipes.length}品を読み込みました`
-    : "⚠️ レシピを読み込めませんでした";
-
-  if(recipes.length === 300){
-
-    $("status").textContent =
-      "300品のレシピを読み込みました。";
-
-  }else if(recipes.length){
-
-    $("status").textContent =
-      `${recipes.length}品を読み込みました（300品と異なります）。`;
-
-  }else{
-
-    $("status").textContent =
-      "recipes.js が test4.html と同じ場所にあるか確認してください。";
+    if(found) chosen.push(found);
   }
 
-  renderFoods();
+  for(const recipe of pool){
+
+    if(chosen.length >= count) break;
+
+    if(!chosen.includes(recipe)){
+      chosen.push(recipe);
+    }
+  }
+
+  selected = chosen;
+
+  renderResults();
+  saveHistory();
+
+  $("status").textContent =
+    `${pool.length}品の候補から${chosen.length}品を選びました。`;
+}
+
+function reroll(index){
+
+  const current = selected[index];
+
+  const pool = candidates().filter(recipe =>
+    String(recipe.id) !== String(current.id) &&
+    !selected.some(
+      (item,j) =>
+        j !== index &&
+        String(item.id) === String(recipe.id)
+    )
+  );
+
+  const replacement =
+    pool.find(recipe => recipe.type === current.type) ||
+    pool[0];
+
+  if(!replacement){
+    alert("変更できる別の料理がありません。");
+    return;
+  }
+
+  selected[index] = replacement;
+
+  renderResults();
+  saveHistory();
+}
+
+/* ===== レシピ表示 ===== */
+
+function renderResults(){
+
+  if(!selected.length){
+    $("results").innerHTML = "";
+    $("shopping").innerHTML =
+      `<p class="small">献立を作ると表示されます。</p>`;
+    return;
+  }
+
+  $("results").innerHTML = `
+    <section>
+      <h2>🍴 今日の献立</h2>
+      <p class="small">
+        各料理の材料・手順を確認できます。
+        「調理開始」で1工程ずつ大きく表示します。
+      </p>
+    </section>
+  ` + selected.map((recipe,index) => {
+
+    const diff = difficulty(recipe);
+    const minutes = totalMinutes(recipe);
+    const steps = stepsOf(recipe);
+
+    const isFavorite =
+      favorites.has(String(recipe.id));
+
+    return `
+      <article class="card">
+
+        <span class="badge">
+          ${escapeHTML(recipe.type || "料理")}
+        </span>
+
+        <span class="badge">
+          ${escapeHTML(recipe.minAge)}か月〜
+        </span>
+
+        <h3>${escapeHTML(recipe.name)}</h3>
+
+        <span class="difficulty ${difficultyClass(diff)}">
+          ${escapeHTML(diff)}
+        </span>
+
+        <p class="small">
+          ⏱ 完成まで：
+          ${minutes === null ? "未確認" : minutes+"分"}
+          ｜ID：${escapeHTML(recipe.id)}
+        </p>
+
+        ${recipe.prepTime != null ||
+          recipe.cookTime != null ? `
+          <p class="small">
+            作業時間：
+            ${recipe.prepTime ?? "未確認"}分
+            ／加熱など：
+            ${recipe.cookTime ?? "未確認"}分
+          </p>
+        ` : ""}
+
+        <details open>
+          <summary>📖 材料・作り方</summary>
+
+          <h4>材料</h4>
+
+          <ul class="ingredients">
+            ${ingredientsOf(recipe).map(item => `
+              <li>${escapeHTML(ingredientText(item))}</li>
+            `).join("")}
+          </ul>
+
+          ${!ingredientsOf(recipe).some(item =>
+            /^(水|だし|昆布だし|野菜だし|かつおだし)$/.test(item.name)
+          ) ? `
+            <p class="small">
+              ※水・だしの分量は材料欄に未登録です。
+              必要量がある場合は元レシピで確認してください。
+            </p>
+          ` : ""}
+
+          <h4>調理手順</h4>
+
+          ${!isDetailed(recipe) ? `
+            <p class="small">
+              ⚠️ 詳細手順は未整備です。
+              現在は登録済みの文章を表示しています。
+            </p>
+          ` : ""}
+
+          ${steps.map((step,i) => `
+            <div class="step">
+              <strong>
+                STEP ${i+1}｜
+                ${escapeHTML(step.title)}
+                ${step.minutes != null
+                  ? "（約"+escapeHTML(step.minutes)+"分）"
+                  : ""}
+              </strong>
+
+              <p>${escapeHTML(step.description)}</p>
+            </div>
+          `).join("")}
+        </details>
+
+        <div class="row">
+          <button class="green" data-cook="${index}">
+            🍳 調理開始
+          </button>
+
+          <button class="gray" data-reroll="${index}">
+            🔄 変更
+          </button>
+
+          <button class="gray" data-favorite="${index}">
+            ${isFavorite ? "❤️ 保存済み" : "🤍 お気に入り"}
+          </button>
+        </div>
+
+      </article>
+    `;
+  }).join("");
+
+  renderShopping();
+}
+
+/* ===== 材料の合算 ===== */
+
+function renderShopping(){
+
+  const totals = new Map();
+
+  selected.forEach(recipe => {
+
+    ingredientsOf(recipe).forEach(item => {
+
+      const key = item.name+"|"+item.unit;
+
+      if(!totals.has(key)){
+        totals.set(key,{
+          name:item.name,
+          unit:item.unit,
+          amount:0,
+          unknown:false
+        });
+      }
+
+      const entry = totals.get(key);
+
+      if(Number.isFinite(item.amount)){
+        entry.amount += item.amount;
+      }else{
+        entry.unknown = true;
+      }
+    });
+  });
+
+  $("shopping").innerHTML = `
+    <ul class="ingredients">
+      ${[...totals.values()].map(item => `
+        <li>
+          ${escapeHTML(item.name)}：
+          ${item.unknown
+            ? "分量要確認"
+            : escapeHTML(
+                Number(item.amount.toFixed(2))
+              )+escapeHTML(item.unit)
+          }
+        </li>
+      `).join("")}
+    </ul>
+    <p class="small">
+      ※調理による蒸発・廃棄分や、
+      食材の購入単位は考慮していません。
+    </p>
+  `;
+}
+
+/* ===== お気に入り ===== */
+
+function toggleFavorite(index){
+
+  const recipe = selected[index];
+  const id = String(recipe.id);
+
+  if(favorites.has(id)){
+    favorites.delete(id);
+  }else{
+    favorites.add(id);
+  }
+
+  save(FAVORITE_KEY,[...favorites]);
+
+  renderResults();
+  renderFavorites();
+}
+
+function renderFavorites(){
+
+  const list = recipes.filter(
+    recipe => favorites.has(String(recipe.id))
+  );
+
+  $("favoritesList").innerHTML = list.length
+    ? `<ul>${list.map(recipe => `
+        <li>
+          ${escapeHTML(recipe.name)}
+          <button class="gray"
+            data-remove-favorite="${escapeHTML(recipe.id)}">
+            解除
+          </button>
+        </li>
+      `).join("")}</ul>`
+    : `<p class="small">まだお気に入りはありません。</p>`;
+}
+
+$("favoritesList").addEventListener("click",event => {
+
+  const button = event.target.closest(
+    "[data-remove-favorite]"
+  );
+
+  if(!button) return;
+
+  favorites.delete(button.dataset.removeFavorite);
+
+  save(FAVORITE_KEY,[...favorites]);
+
+  renderFavorites();
+  renderResults();
+});
+
+/* ===== 履歴 ===== */
+
+function saveHistory(){
+
+  const history = load(HISTORY_KEY,[]);
+
+  history.unshift({
+    date:new Date().toLocaleString("ja-JP"),
+    ids:selected.map(recipe => recipe.id),
+    names:selected.map(recipe => recipe.name)
+  });
+
+  save(HISTORY_KEY,history.slice(0,20));
+
   renderHistory();
+}
+
+function renderHistory(){
+
+  const history = load(HISTORY_KEY,[]);
+
+  $("history").innerHTML = history.length
+    ? `<ol>${history.map(item => `
+        <li>
+          <small>${escapeHTML(item.date)}</small><br>
+          ${(item.names || []).map(escapeHTML).join(" ／ ")}
+        </li>
+      `).join("")}</ol>`
+    : `<p class="small">履歴はありません。</p>`;
+}
+
+/* ===== 調理モード ===== */
+
+let cookingRecipe = null;
+let cookingIndex = 0;
+let completed = new Set();
+let wakeLock = null;
+
+async function requestWakeLock(){
+
+  if(!("wakeLock" in navigator)){
+    $("wakeStatus").textContent =
+      "このブラウザでは画面スリープ防止に対応していません。";
+    return;
+  }
+
+  try{
+    wakeLock = await navigator.wakeLock.request("screen");
+
+    $("wakeStatus").textContent =
+      "画面スリープ防止を有効にしています。";
+  }catch{
+    $("wakeStatus").textContent =
+      "画面スリープ防止を有効にできませんでした。";
+  }
+}
+
+async function releaseWakeLock(){
+
+  if(wakeLock){
+    try{
+      await wakeLock.release();
+    }catch{}
+    wakeLock = null;
+  }
+}
+
+function startCooking(index){
+
+  cookingRecipe = selected[index];
+  cookingIndex = 0;
+  completed = new Set();
+
+  $("cookMode").classList.add("active");
+
+  renderCookStep();
+  requestWakeLock();
+}
+
+function renderCookStep(){
+
+  if(!cookingRecipe) return;
+
+  const steps = stepsOf(cookingRecipe);
+  const step = steps[cookingIndex];
+
+  $("cookTitle").textContent =
+    cookingRecipe.name;
+
+  $("cookProgress").textContent =
+    `STEP ${cookingIndex+1} / ${steps.length}`;
+
+  $("cookIngredients").innerHTML = `
+    <details>
+      <summary>📋 材料を確認</summary>
+      <ul class="ingredients">
+        ${ingredientsOf(cookingRecipe).map(item => `
+          <li>${escapeHTML(ingredientText(item))}</li>
+        `).join("")}
+      </ul>
+    </details>
+  `;
+
+  $("cookStep").innerHTML = `
+    <strong>${escapeHTML(step.title)}</strong>
+    <div>${escapeHTML(step.description)}</div>
+    ${step.minutes != null
+      ? `<p class="small">目安：約${escapeHTML(step.minutes)}分</p>`
+      : ""}
+  `;
+
+  $("cookDone").checked =
+    completed.has(cookingIndex);
+
+  $("prevStep").disabled =
+    cookingIndex === 0;
+
+  $("nextStep").textContent =
+    cookingIndex === steps.length-1
+      ? "調理終了 ✓"
+      : "次へ →";
+}
+
+function closeCooking(){
+
+  $("cookMode").classList.remove("active");
+  cookingRecipe = null;
+
+  releaseWakeLock();
+}
+
+$("cookDone").onchange = () => {
+
+  if($("cookDone").checked){
+    completed.add(cookingIndex);
+  }else{
+    completed.delete(cookingIndex);
+  }
+};
+
+$("prevStep").onclick = () => {
+
+  if(cookingIndex > 0){
+    cookingIndex--;
+    renderCookStep();
+  }
+};
+
+$("nextStep").onclick = () => {
+
+  if(!cookingRecipe) return;
+
+  const last = stepsOf(cookingRecipe).length-1;
+
+  if(cookingIndex < last){
+    cookingIndex++;
+    renderCookStep();
+  }else{
+    closeCooking();
+  }
+};
+
+$("closeCook").onclick = closeCooking;
+
+document.addEventListener(
+  "visibilitychange",() => {
+
+    if(
+      document.visibilityState === "visible" &&
+      cookingRecipe &&
+      !wakeLock
+    ){
+      requestWakeLock();
+    }
+  }
+);
+
+/* ===== 操作 ===== */
+
+$("results").addEventListener("click",event => {
+
+  const cook = event.target.closest("[data-cook]");
+  const rerollButton = event.target.closest("[data-reroll]");
+  const favoriteButton = event.target.closest("[data-favorite]");
+
+  if(cook){
+    startCooking(Number(cook.dataset.cook));
+  }
+
+  if(rerollButton){
+    reroll(Number(rerollButton.dataset.reroll));
+  }
+
+  if(favoriteButton){
+    toggleFavorite(Number(favoriteButton.dataset.favorite));
+  }
+});
+
+$("generate").onclick = generate;
+
+$("age").onchange = () => {
+
+  storeSettings();
+  renderFoods();
+
+  selected = [];
+  renderResults();
+
+  $("status").textContent =
+    "月齢を変更しました。献立を作り直してください。";
+};
+
+["count","timeFilter","favoriteFilter"].forEach(id => {
+  $(id).addEventListener("change",storeSettings);
+});
+
+$("reset").onclick = () => {
+
+  if(!confirm("食材設定と献立条件を初期化しますか？")){
+    return;
+  }
+
+  eaten.clear();
+  excluded.clear();
+  selected = [];
+
+  $("age").value = "5";
+  $("count").value = "3";
+  $("timeFilter").value = "9999";
+  $("favoriteFilter").value = "all";
+  $("foodSearch").value = "";
+
+  storeSettings();
+  renderFoods();
+  renderResults();
+
+  $("status").textContent = "設定を初期化しました。";
+};
+
+$("clearHistory").onclick = () => {
+
+  if(!confirm("献立履歴を消去しますか？")){
+    return;
+  }
+
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+};
+
+/* ===== 初期化 ===== */
+
+$("recipeCount").textContent =
+  `📚 登録レシピ ${recipes.length}品`;
+
+$("status").textContent = recipes.length
+  ? `${recipes.length}品のレシピを読み込みました。`
+  : "recipes.js を読み込めませんでした。ファイル名と配置を確認してください。";
+
+renderFoods();
+renderFavorites();
+renderHistory();
 
 })();
 </script>
